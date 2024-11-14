@@ -1,0 +1,23 @@
+name: pwi_auth
+description: "PWI Cross-Domain Authentication for Flutter"
+version: 0.0.1
+homepage:
+
+environment:
+  sdk: ^3.5.3
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_auth: ^5.3.3
+  http: ^1.2.2
+  web: ^1.1.0
+  url_launcher: ^6.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
