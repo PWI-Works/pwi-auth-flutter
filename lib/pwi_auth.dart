@@ -20,8 +20,17 @@ class PwiAuth {
   Completer<void>? _signOutCompleter;
   StreamSubscription<User?>? _authSub;
 
+  /// A stream that emits authentication state changes.
+  final StreamController<User?> _controller =
+      StreamController<User?>.broadcast();
+
+  /// Returns a stream of authentication state changes.
+  Stream<User?> get authStateChanges => _controller.stream;
+
   /// Indicates whether the user is currently signed in.
   bool get signedIn => user != null;
+
+  final bool requireSessionCookie;
 
   /// Controls whether logging is enabled.
   final bool loggingEnabled;
@@ -38,28 +47,27 @@ class PwiAuth {
   /// Creates an instance of [PwiAuth] with the given endpoint.
   ///
   /// The [loggingEnabled] parameter controls whether logging is enabled.
-  PwiAuth(this._endPoint, {this.loggingEnabled = false}) {
+  /// The [requireSessionCookie] parameter controls whether a session cookie is required for authentication.
+  /// Use this parameter to disable session cookie checks when testing from a domain that is blocked via CORS.
+  PwiAuth(this._endPoint,
+      {this.requireSessionCookie = true, this.loggingEnabled = false}) {
     _subscribeToAuthChanges();
 
-    _authCheckTimer = Timer.periodic(const Duration(seconds: 2), (timer) async {
-      if ((!_sessionCookieIsPresent()) && (user != null)) {
-        _log('Session cookie not present, signing out');
-        _authCheckTimer?.cancel();
-        try {
-          await _auth.signOut();
-        } catch (e) {
-          _log(e);
+    if (requireSessionCookie) {
+      _authCheckTimer =
+          Timer.periodic(const Duration(seconds: 2), (timer) async {
+        if ((!_sessionCookieIsPresent()) && (user != null)) {
+          _log('Session cookie not present, signing out');
+          _authCheckTimer?.cancel();
+          try {
+            await _auth.signOut();
+          } catch (e) {
+            _log(e);
+          }
         }
-      }
-    });
+      });
+    }
   }
-
-  /// A stream that emits authentication state changes.
-  final StreamController<User?> _controller =
-      StreamController<User?>.broadcast();
-
-  /// Returns a stream of authentication state changes.
-  Stream<void> get authStateChanges => _controller.stream;
 
   /// Subscribes to authentication state changes and updates the user accordingly.
   void _subscribeToAuthChanges() {
