@@ -30,7 +30,7 @@ class PwiAuth {
   /// Indicates whether the user is currently signed in.
   bool get signedIn => user != null;
 
-  final bool requireSessionCookie;
+  final bool useSessionCookie;
 
   /// Controls whether logging is enabled.
   final bool loggingEnabled;
@@ -47,13 +47,13 @@ class PwiAuth {
   /// Creates an instance of [PwiAuth] with the given endpoint.
   ///
   /// The [loggingEnabled] parameter controls whether logging is enabled.
-  /// The [requireSessionCookie] parameter controls whether a session cookie is required for authentication.
+  /// The [useSessionCookie] parameter controls whether a session cookie is required for authentication.
   /// Use this parameter to disable session cookie checks when testing from a domain that is blocked via CORS.
   PwiAuth(this._endPoint,
-      {this.requireSessionCookie = true, this.loggingEnabled = false}) {
+      {this.useSessionCookie = true, this.loggingEnabled = false}) {
     _subscribeToAuthChanges();
 
-    if (requireSessionCookie) {
+    if (useSessionCookie) {
       _authCheckTimer =
           Timer.periodic(const Duration(seconds: 2), (timer) async {
         if ((!_sessionCookieIsPresent()) && (user != null)) {
@@ -78,13 +78,17 @@ class PwiAuth {
           _signOutCompleter!.complete();
           _signOutCompleter = null;
         }
-
-        try {
-          final token = await _checkAuthStatus();
-          _auth.signInWithCustomToken(token);
-        } catch (e) {
-          // Signed out
-          _log(e);
+        if (useSessionCookie) {
+          try {
+            final token = await _checkAuthStatus();
+            _auth.signInWithCustomToken(token);
+          } catch (e) {
+            // Signed out
+            _log(e);
+            this.user = null;
+            _controller.add(null);
+          }
+        } else {
           this.user = null;
           _controller.add(null);
         }
@@ -138,12 +142,16 @@ class PwiAuth {
 
   /// Signs out the current user and clears the session cookie.
   Future<void> signOut() async {
-    _signOutCompleter = Completer<void>();
     try {
-      await _clearSessionCookie();
+      if (useSessionCookie) {
+        _signOutCompleter = Completer<void>();
+        await _clearSessionCookie();
 
-      if (_signOutCompleter != null) {
-        await _signOutCompleter!.future.timeout(const Duration(seconds: 5));
+        if (_signOutCompleter != null) {
+          await _signOutCompleter!.future.timeout(const Duration(seconds: 5));
+        }
+      } else {
+        await _auth.signOut();
       }
     } catch (e) {
       _log(e);
@@ -175,8 +183,11 @@ class PwiAuth {
     try {
       final userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
-      final idToken = await userCredential.user?.getIdToken(true);
-      await _setSessionCookie(idToken!);
+
+      if (useSessionCookie) {
+        final idToken = await userCredential.user?.getIdToken(true);
+        await _setSessionCookie(idToken!);
+      }
     } catch (e) {
       final error = e.toString();
       _log(error);
@@ -202,8 +213,11 @@ class PwiAuth {
     try {
       final provider = GoogleAuthProvider();
       final userCredential = await _auth.signInWithPopup(provider);
-      final idToken = await userCredential.user?.getIdToken(true);
-      await _setSessionCookie(idToken!);
+
+      if (useSessionCookie) {
+        final idToken = await userCredential.user?.getIdToken(true);
+        await _setSessionCookie(idToken!);
+      }
     } catch (e) {
       _log(e.toString());
       throw "Error signing in with Google. Try again later";
@@ -231,8 +245,10 @@ class PwiAuth {
 
       await credential.user!.updateDisplayName("$firstName $lastName");
 
-      final idToken = await credential.user?.getIdToken(true);
-      await _setSessionCookie(idToken!);
+      if (useSessionCookie) {
+        final idToken = await credential.user?.getIdToken(true);
+        await _setSessionCookie(idToken!);
+      }
     } catch (e) {
       _log(e.toString());
 
