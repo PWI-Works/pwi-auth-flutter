@@ -300,8 +300,8 @@ class PwiAuth {
 
   /// Disposes of resources used by this instance.
   void dispose() {
-    _controller.close();
     _authSub?.cancel();
+    _controller.close();
     _authCheckTimer?.cancel();
   }
 }
