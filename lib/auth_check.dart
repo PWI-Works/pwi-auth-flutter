@@ -53,29 +53,12 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> with RouteAware {
   Widget build(BuildContext context) {
     log("building AuthCheck view, redirectLoopRunning: ${viewModel.redirectLoopRunning}, authChecked: ${viewModel.authChecked}, isSignedIn: ${viewModel.isSignedIn}");
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!viewModel.redirectLoopRunning) {
-        viewModel.redirectLoopRunning = true;
-        _waitCheckAuth();
-      }
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _waitCheckAuth());
 
     return const Scaffold(
       body: Center(
         child: CircularProgressIndicator(),
       ),
     );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    routeObserver.subscribe(this, ModalRoute.of(context)!);
-  }
-
-  @override
-  void didPopNext() {
-    // Called when this route is again visible after popping a next route
-    _waitCheckAuth();
   }
 }
