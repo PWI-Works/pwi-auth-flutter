@@ -53,8 +53,7 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
 
   @override
   Widget build(BuildContext context) {
-    log("building AuthCheck view");
-    log(viewModel);
+    log("building AuthCheck view, redirectLoopRunning: ${viewModel.redirectLoopRunning}, authChecked: ${viewModel.authChecked}, isSignedIn: ${viewModel.isSignedIn}");
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!viewModel.redirectLoopRunning) {
