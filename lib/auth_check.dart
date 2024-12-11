@@ -7,7 +7,7 @@ import 'auth_check_view_model.dart';
 
 import 'login_page.dart';
 
-class AuthCheck extends ViewWidget<AuthCheckViewModel> with RouteAware {
+class AuthCheck extends ViewWidget<AuthCheckViewModel> {
   AuthCheck(
       {super.key,
       required String authenticatedRoute,
@@ -64,11 +64,5 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> with RouteAware {
         child: CircularProgressIndicator(),
       ),
     );
-  }
-
-  @override
-  void didPopNext() {
-    // Called when this route is again visible after popping a next route
-    _waitCheckAuth();
   }
 }
