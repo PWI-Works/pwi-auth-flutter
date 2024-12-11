@@ -33,7 +33,6 @@ class PwiAuth {
 
   final bool useSessionCookie;
 
-
   static bool _authStatusChecked = false;
 
   bool get authStatusChecked => _authStatusChecked;
@@ -47,7 +46,7 @@ class PwiAuth {
     _subscribeToAuthChanges();
 
     enableLogs = loggingEnabled;
-    
+
     if (useSessionCookie) {
       _attemptSignInWithCookie();
       _authCheckTimer =
