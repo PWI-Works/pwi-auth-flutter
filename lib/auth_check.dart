@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:mvvm_plus/mvvm_plus.dart';
 import 'package:pwi_auth/utils.dart';
 import 'auth_check_view_model.dart';
-
 import 'login_page.dart';
 
-class AuthCheck extends ViewWidget<AuthCheckViewModel> {
+final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+
+class AuthCheck extends ViewWidget<AuthCheckViewModel> with RouteAware {
   AuthCheck(
       {super.key,
       required String authenticatedRoute,
@@ -64,5 +65,17 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
         child: CircularProgressIndicator(),
       ),
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+  }
+
+  @override
+  void didPopNext() {
+    // Called when this route is again visible after popping a next route
+    _waitCheckAuth();
   }
 }
