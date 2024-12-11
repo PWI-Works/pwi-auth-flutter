@@ -34,7 +34,7 @@ class PwiAuth {
   final bool useSessionCookie;
 
 
-  bool _authStatusChecked = false;
+  static bool _authStatusChecked = false;
 
   bool get authStatusChecked => _authStatusChecked;
 
