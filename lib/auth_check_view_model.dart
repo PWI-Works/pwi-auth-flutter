@@ -17,9 +17,5 @@ class AuthCheckViewModel extends ViewModel {
     } catch (e) {
       throw ("PwiAuth service not initialized with Bilocators.");
     }
-
-    _auth.authStateChanges.listen((_) {
-      buildView();
-    });
   }
 }
