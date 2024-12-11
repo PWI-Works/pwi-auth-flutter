@@ -12,18 +12,18 @@ class AuthCheckViewModel extends ViewModel {
   bool redirectLoopRunning = false;
 
   bool get isSignedIn => _auth.signedIn;
+
   bool get authChecked => _auth.authStatusChecked;
 
-  AuthCheckViewModel({required this.authenticatedRoute, required this.appTitle}) {
+  AuthCheckViewModel(
+      {required this.authenticatedRoute, required this.appTitle}) {
     try {
       _auth = get<PwiAuth>();
     } catch (e) {
       throw ("PwiAuth service not initialized with Bilocators.");
     }
 
-    _authSubscription = _auth.authStateChanges.listen((_) {
-      buildView();
-    });
+    _authSubscription = _auth.authStateChanges.listen((_) => buildView());
   }
 
   @override
