@@ -23,3 +23,5 @@ dev_dependencies:
   flutter_lints: ^4.0.0
 
 flutter:
+  assets:
+    - assets/images/pwi_logo.png
