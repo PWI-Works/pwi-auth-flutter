@@ -28,9 +28,6 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
       return;
     }
 
-    // reset in case of future view builds
-    viewModel.redirectLoopRunning = false;
-
     switch (viewModel.isSignedIn) {
       case true:
         log("User is signed in, redirecting to ${viewModel.authenticatedRoute}");
