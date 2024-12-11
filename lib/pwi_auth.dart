@@ -5,8 +5,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+
 import 'package:http/browser_client.dart';
+import 'package:pwi_auth/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:web/web.dart';
 
@@ -32,17 +33,6 @@ class PwiAuth {
 
   final bool useSessionCookie;
 
-  /// Controls whether logging is enabled.
-  final bool loggingEnabled;
-
-  /// Logs a [message] if logging is enabled.
-  void _log(Object? message) {
-    if (loggingEnabled) {
-      if (kDebugMode) {
-        print(message);
-      }
-    }
-  }
 
   bool _authStatusChecked = false;
 
@@ -53,20 +43,22 @@ class PwiAuth {
   /// The [loggingEnabled] parameter controls whether logging is enabled.
   /// The [useSessionCookie] parameter controls whether a session cookie is required for authentication.
   /// Use this parameter to disable session cookie checks when testing from a domain that is blocked via CORS.
-  PwiAuth({this.useSessionCookie = true, this.loggingEnabled = false}) {
+  PwiAuth({this.useSessionCookie = true, bool loggingEnabled = false}) {
     _subscribeToAuthChanges();
 
+    enableLogs = loggingEnabled;
+    
     if (useSessionCookie) {
       _attemptSignInWithCookie();
       _authCheckTimer =
           Timer.periodic(const Duration(seconds: 2), (timer) async {
         if ((!_sessionCookieIsPresent()) && (user != null)) {
-          _log('Session cookie not present, signing out');
+          log('Session cookie not present, signing out');
           _authCheckTimer?.cancel();
           try {
             await _auth.signOut();
           } catch (e) {
-            _log(e);
+            log(e);
           }
         }
       });
@@ -79,7 +71,7 @@ class PwiAuth {
   /// Subscribes to authentication state changes and updates the user accordingly.
   void _subscribeToAuthChanges() {
     _authSub = _auth.authStateChanges().listen((user) async {
-      _log(user);
+      log(user);
       if (user == null) {
         if (_signOutCompleter != null) {
           _signOutCompleter!.complete();
@@ -114,7 +106,7 @@ class PwiAuth {
       _auth.signInWithCustomToken(token);
     } catch (e) {
       // Signed out
-      _log(e);
+      log(e);
       user = null;
       _controller.add(null);
     }
@@ -132,10 +124,10 @@ class PwiAuth {
     final uri = Uri.parse('https://$_endPoint/api/auth-status');
     final response = await client.get(uri);
 
-    _log(response.body);
-    _log(response.headers);
+    log(response.body);
+    log(response.headers);
     for (var key in response.headers.keys) {
-      _log('$key: ${response.headers[key]}');
+      log('$key: ${response.headers[key]}');
     }
 
     if (response.statusCode != 200) {
@@ -174,7 +166,7 @@ class PwiAuth {
         await _auth.signOut();
       }
     } catch (e) {
-      _log(e);
+      log(e);
       _signOutCompleter = null;
     }
   }
@@ -210,7 +202,7 @@ class PwiAuth {
       }
     } catch (e) {
       final error = e.toString();
-      _log(error);
+      log(error);
 
       if (error.contains("invalid-email") ||
           error.contains("wrong-password") ||
@@ -239,7 +231,7 @@ class PwiAuth {
         await _setSessionCookie(idToken!);
       }
     } catch (e) {
-      _log(e.toString());
+      log(e.toString());
       throw "Error signing in with Google. Try again later";
     }
   }
@@ -270,7 +262,7 @@ class PwiAuth {
         await _setSessionCookie(idToken!);
       }
     } catch (e) {
-      _log(e.toString());
+      log(e.toString());
 
       final error = e.toString();
       if (error.contains("invalid-email")) {
@@ -305,9 +297,9 @@ class PwiAuth {
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
-      _log("Password reset email sent to $email");
+      log("Password reset email sent to $email");
     } catch (e) {
-      _log("Error sending password reset email: ${e.toString()}");
+      log("Error sending password reset email: ${e.toString()}");
       final error = e.toString();
       if (error.contains("invalid-email")) {
         throw "Invalid email address";

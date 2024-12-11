@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:pwi_auth/pwi_auth.dart';
+import 'package:pwi_auth/utils.dart';
 
 import 'auth_check.dart';
 
@@ -87,6 +88,7 @@ class LoginPage extends StatelessWidget {
         ),
       ],
       onSubmitAnimationCompleted: () {
+        log("Submit animation completed. Navigating to AuthCheck page.");
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => AuthCheck(
