@@ -59,7 +59,7 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return FlutterLogin(
       title: title,
-      logo: const AssetImage('assets/images/pwi_logo.png'),
+      logo: const AssetImage('packages/pwi_apps/assets/images/pwi_logo.png'),
       onLogin: _signInWithCredentials,
       onSignup: _signUp,
       additionalSignupFields: const [
