@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:mvvm_plus/mvvm_plus.dart';
 import 'package:pwi_auth/pwi_auth.dart';
 
@@ -5,6 +6,8 @@ class AuthCheckViewModel extends ViewModel {
   late final PwiAuth _auth;
   final String authenticatedRoute;
   final String appTitle;
+
+  late final StreamSubscription _authSubscription;
 
   bool redirectLoopRunning = false;
 
@@ -18,8 +21,14 @@ class AuthCheckViewModel extends ViewModel {
       throw ("PwiAuth service not initialized with Bilocators.");
     }
 
-    _auth.authStateChanges.listen((_) {
+    _authSubscription = _auth.authStateChanges.listen((_) {
       buildView();
     });
+  }
+
+  @override
+  void dispose() {
+    _authSubscription.cancel();
+    super.dispose();
   }
 }
