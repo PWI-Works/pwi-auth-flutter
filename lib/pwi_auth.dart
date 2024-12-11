@@ -37,11 +37,11 @@ class PwiAuth {
 
   /// Logs a [message] if logging is enabled.
   void _log(Object? message) {
-    if (loggingEnabled) {
-      if (kDebugMode) {
+    //if (loggingEnabled) {
+      //if (kDebugMode) {
         print(message);
-      }
-    }
+      //}
+    //}
   }
 
   /// Creates an instance of [PwiAuth] with the given endpoint.
