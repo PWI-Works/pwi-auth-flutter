@@ -3,15 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:pwi_auth/pwi_auth.dart';
 
-import 'auth_check.dart';
-
 class LoginPage extends StatelessWidget {
   final PwiAuth _auth = PwiAuth(useSessionCookie: !kDebugMode);
 
-  final String appTitle;
-  final String authenticatedRoute;
+  final String title;
+  final String onSignInRoute;
 
-  LoginPage({super.key, required this.appTitle, required this.authenticatedRoute});
+  LoginPage({super.key, required this.title, required this.onSignInRoute});
 
   Future<String?> _signInWithCredentials(LoginData data) async {
     try {
@@ -60,7 +58,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FlutterLogin(
-      title: appTitle,
+      title: title,
       logo: const AssetImage('packages/pwi_auth/assets/images/pwi_logo.png'),
       onLogin: _signInWithCredentials,
       onSignup: _signUp,
@@ -87,14 +85,7 @@ class LoginPage extends StatelessWidget {
         ),
       ],
       onSubmitAnimationCompleted: () {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => AuthCheck(
-              appTitle: appTitle,
-              authenticatedRoute: authenticatedRoute,
-            ),
-          ),
-        );
+        Navigator.of(context).pushReplacementNamed(onSignInRoute);
       },
       onRecoverPassword: _recoverPassword,
     );
