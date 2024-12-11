@@ -13,7 +13,7 @@ import 'package:web/web.dart';
 /// A class that provides authentication functionalities, including sign-in, sign-up, and session management.
 class PwiAuth {
   // Private variables
-  final String _endPoint;
+  final String _endPoint = 'auth.pwiworks.app';
   User? user;
   final _auth = FirebaseAuth.instance;
   Timer? _authCheckTimer;
@@ -44,16 +44,20 @@ class PwiAuth {
     }
   }
 
+  bool _authStatusChecked = false;
+
+  bool get authStatusChecked => _authStatusChecked;
+
   /// Creates an instance of [PwiAuth] with the given endpoint.
   ///
   /// The [loggingEnabled] parameter controls whether logging is enabled.
   /// The [useSessionCookie] parameter controls whether a session cookie is required for authentication.
   /// Use this parameter to disable session cookie checks when testing from a domain that is blocked via CORS.
-  PwiAuth(this._endPoint,
-      {this.useSessionCookie = true, this.loggingEnabled = false}) {
+  PwiAuth({this.useSessionCookie = true, this.loggingEnabled = false}) {
     _subscribeToAuthChanges();
 
     if (useSessionCookie) {
+      _attemptSignInWithCookie();
       _authCheckTimer =
           Timer.periodic(const Duration(seconds: 2), (timer) async {
         if ((!_sessionCookieIsPresent()) && (user != null)) {
@@ -79,15 +83,7 @@ class PwiAuth {
           _signOutCompleter = null;
         }
         if (useSessionCookie) {
-          try {
-            final token = await _checkAuthStatus();
-            _auth.signInWithCustomToken(token);
-          } catch (e) {
-            // Signed out
-            _log(e);
-            this.user = null;
-            _controller.add(null);
-          }
+          _attemptSignInWithCookie();
         } else {
           this.user = null;
           _controller.add(null);
@@ -98,6 +94,27 @@ class PwiAuth {
         _controller.add(user);
       }
     });
+  }
+
+  /// Attempts to automatically sign in the user using the session cookie.
+  ///
+  /// This method checks the authentication status by calling `_checkAuthStatus`.
+  /// If the authentication status has not been checked before, it sets `_authStatusChecked` to true.
+  /// It then attempts to sign in the user with the custom token obtained from `_checkAuthStatus`.
+  /// If an error occurs during the process, it logs the error, sets the `user` to null, and adds null to the `_controller` stream.
+  Future<void> _attemptSignInWithCookie() async {
+    try {
+      final token = await _checkAuthStatus();
+      if (_authStatusChecked == false) {
+        _authStatusChecked = true;
+      }
+      _auth.signInWithCustomToken(token);
+    } catch (e) {
+      // Signed out
+      _log(e);
+      user = null;
+      _controller.add(null);
+    }
   }
 
   /// Checks the authentication status and returns a custom token if signed in.
