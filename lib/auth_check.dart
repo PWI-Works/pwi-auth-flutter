@@ -17,12 +17,13 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
                 appTitle: appTitle));
 
   void _waitCheckAuth() async {
+    if (!viewModel.authChecked) {
+      // wait for auth check to complete
+      await Future.delayed(const Duration(milliseconds: 300), _waitCheckAuth);
+      return;
+    }
+
     switch (viewModel.isSignedIn) {
-      case null:
-        // call recursively until we have a value
-        await Future.delayed(const Duration(milliseconds: 300), _waitCheckAuth);
-        _waitCheckAuth();
-        break;
       case true:
         Navigator.of(context)
             .pushReplacementNamed(viewModel.authenticatedRoute);
@@ -43,8 +44,8 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!viewModel.skipAuthCheck) {
-        viewModel.skipAuthCheck = true;
+      if (!viewModel.redirectLoopRunning) {
+        viewModel.redirectLoopRunning = true;
         _waitCheckAuth();
       }
     });

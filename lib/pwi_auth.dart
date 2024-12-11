@@ -70,6 +70,9 @@ class PwiAuth {
           }
         }
       });
+    } else {
+      // if not using session cookie, assume auth status is current
+      _authStatusChecked = true;
     }
   }
 

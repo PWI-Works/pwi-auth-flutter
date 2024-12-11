@@ -6,10 +6,10 @@ class AuthCheckViewModel extends ViewModel {
   final String authenticatedRoute;
   final String appTitle;
 
-  bool? _isSignedIn;
-  bool? get isSignedIn => _isSignedIn;
+  bool redirectLoopRunning = false;
 
-  bool skipAuthCheck = false;
+  bool get isSignedIn => _auth.signedIn;
+  bool get authChecked => _auth.authStatusChecked;
 
   AuthCheckViewModel({required this.authenticatedRoute, required this.appTitle}) {
     try {
@@ -17,6 +17,5 @@ class AuthCheckViewModel extends ViewModel {
     } catch (e) {
       throw ("PwiAuth service not initialized with Bilocators.");
     }
-    _isSignedIn = _auth.signedIn;
   }
 }
