@@ -32,8 +32,8 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => LoginPage(
-              appTitle: viewModel.appTitle,
-              authenticatedRoute: viewModel.authenticatedRoute,
+              title: viewModel.appTitle,
+              onSignInRoute: viewModel.authenticatedRoute,
             ),
           ),
         );
