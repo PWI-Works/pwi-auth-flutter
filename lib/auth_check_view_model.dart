@@ -1,3 +1,6 @@
+/// The PwiAuth library provides authentication functionalities for the PWI application.
+library pwi_auth;
+
 import 'dart:async';
 import 'package:mvvm_plus/mvvm_plus.dart';
 import 'package:pwi_auth/pwi_auth.dart';

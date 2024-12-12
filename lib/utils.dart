@@ -1,3 +1,6 @@
+/// The PwiAuth library provides authentication functionalities for the PWI application.
+library pwi_auth;
+
 import 'package:flutter/foundation.dart';
 
 bool enableLogs = false;
