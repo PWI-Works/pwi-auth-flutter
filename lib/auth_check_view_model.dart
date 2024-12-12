@@ -13,7 +13,12 @@ class AuthCheckViewModel extends ViewModel {
   late final StreamSubscription _authSubscription;
   late final StreamSubscription _errorSubscription;
 
-  bool redirectLoopRunning = false;
+  bool _redirectLoopRunning = false;
+  bool get redirectLoopRunning => _redirectLoopRunning;
+  set redirectLoopRunning(bool value) {
+      _redirectLoopRunning = value;
+      buildView();
+  }
 
   bool get isSignedIn => _auth.signedIn;
 
