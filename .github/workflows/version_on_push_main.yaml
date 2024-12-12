@@ -21,3 +21,29 @@ jobs:
           git add pubspec.yaml
           git commit -m "Increment patch version"
           git push
+
+      - name: Notify External Webhook
+        env:
+          WEBHOOK_URL: "https://hook.us1.make.com/pj68jejm7paquq49r3yvde9ccjb5b5hp"
+          MESSAGE: "${{ github.event.head_commit.message }}"
+          AUTHOR: "${{ github.actor }}"
+        run: |
+          # Construct JSON payload using jq to safely escape variables
+          PAYLOAD=$(jq -n \
+            --arg text "pwi-auth-flutter package updated. Please run flutter pub upgrade pwi_auth to realize changes." \
+            --arg message "$MESSAGE" \
+            --arg author "$AUTHOR" \
+            --arg project "pwi-auth-flutter" \
+            --arg channel "live" \
+            '{
+              text: $text,
+              message: $message,
+              author: $author,
+              project: $project,
+              channel: $channel
+            }')
+          
+          # Send POST request with the constructed payload
+          curl -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD"

@@ -24,9 +24,9 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
 
   void _waitCheckAuth() async {
     if (!viewModel.authChecked) {
+      viewModel.waitAuthCheckLoops ++;
       // wait for auth check to complete
       await Future.delayed(const Duration(milliseconds: 300), _waitCheckAuth);
-      viewModel.waitAuthCheckLoops ++;
       return;
     }
 
@@ -48,6 +48,8 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
         );
         break;
     }
+
+    viewModel.redirectLoopRunning = false;
   }
 
   @override
