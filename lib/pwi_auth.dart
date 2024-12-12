@@ -96,7 +96,7 @@ class PwiAuth {
   /// This method calls `_attemptSignInWithCookie` to try signing in the user using a session cookie.
   /// It is useful for manually triggering an authentication check when needed.
   Future<void> forceCheckAuth() async {
-    if (!useSessionCookie){
+    if (!useSessionCookie) {
       _authStatusChecked = true;
       return;
     }
@@ -142,9 +142,6 @@ class PwiAuth {
   Future<void> _attemptSignInWithCookie() async {
     try {
       final token = await _checkAuthStatus();
-      if (_authStatusChecked == false) {
-        _authStatusChecked = true;
-      }
       _auth.signInWithCustomToken(token);
     } catch (e) {
       // Signed out
@@ -158,6 +155,10 @@ class PwiAuth {
 
       user = null;
       _controller.add(null);
+    } finally {
+      if (_authStatusChecked == false) {
+        _authStatusChecked = true;
+      }
     }
   }
 
