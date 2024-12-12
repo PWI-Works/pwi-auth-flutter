@@ -24,21 +24,20 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
 
   @override
   Widget build(BuildContext context) {
-    log("building AuthCheck view, redirectLoopRunning: ${viewModel.redirectLoopRunning}, authChecked: ${viewModel.authChecked}, isSignedIn: ${viewModel.isSignedIn}");
+    log("building AuthCheck view");
 
     if (viewModel.authChecked) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _navigate();
       });
-      return const SizedBox.shrink();
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!viewModel.redirectLoopRunning) {
+          viewModel.redirectLoopRunning = true;
+          _delayedNavigate();
+        }
+      });
     }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!viewModel.redirectLoopRunning) {
-        viewModel.redirectLoopRunning = true;
-        _delayedNavigate();
-      }
-    });
 
     return Scaffold(
       body: Stack(
