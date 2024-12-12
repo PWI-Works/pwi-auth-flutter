@@ -3,9 +3,7 @@ library pwi_auth;
 
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:http/browser_client.dart';
 import 'package:pwi_auth/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
