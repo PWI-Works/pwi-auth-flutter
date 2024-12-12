@@ -27,7 +27,9 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
     log("building AuthCheck view, redirectLoopRunning: ${viewModel.redirectLoopRunning}, authChecked: ${viewModel.authChecked}, isSignedIn: ${viewModel.isSignedIn}");
 
     if (viewModel.authChecked) {
-      _navigate();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _navigate();
+      });
       return const SizedBox.shrink();
     }
 
