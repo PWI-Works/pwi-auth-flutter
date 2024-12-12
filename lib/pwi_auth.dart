@@ -13,6 +13,8 @@ import 'package:web/web.dart';
 
 /// A class that provides authentication functionalities, including sign-in, sign-up, and session management.
 class PwiAuth {
+  static const String _notSignedInMessage = "not-signed-in";
+
   // Private variables
   final String _endPoint = 'auth.pwiworks.app';
   User? user;
@@ -27,6 +29,13 @@ class PwiAuth {
 
   /// Returns a stream of authentication state changes.
   Stream<User?> get authStateChanges => _controller.stream;
+
+  /// A stream that emits errors.
+  final StreamController<String?> _errors =
+      StreamController<String?>.broadcast();
+
+  /// Returns a stream of errors.
+  Stream<String?> get errors => _errors.stream;
 
   /// Indicates whether the user is currently signed in.
   bool get signedIn => user != null;
@@ -48,23 +57,37 @@ class PwiAuth {
     enableLogs = loggingEnabled;
 
     if (useSessionCookie) {
-      _attemptSignInWithCookie();
-      _authCheckTimer =
-          Timer.periodic(const Duration(seconds: 2), (timer) async {
-        if ((!_sessionCookieIsPresent()) && (user != null)) {
-          log('Session cookie not present, signing out');
-          _authCheckTimer?.cancel();
-          try {
-            await _auth.signOut();
-          } catch (e) {
-            log(e);
-          }
-        }
-      });
+      _initAuthWatch();
     } else {
       // if not using session cookie, assume auth status is current
       _authStatusChecked = true;
     }
+  }
+
+  /// Initializes the authentication watch process.
+  ///
+  /// This method attempts to sign in the user using a session cookie. If the session cookie is not present,
+  /// it periodically checks every 2 seconds and signs out the user if the session cookie is missing.
+  ///
+  /// The method performs the following steps:
+  /// 1. Calls `_attemptSignInWithCookie` to try signing in the user with a session cookie.
+  /// 2. Sets up a periodic timer that runs every 2 seconds to check the presence of the session cookie.
+  /// 3. If the session cookie is not present and the user is signed in, it logs a message and signs out the user.
+  ///
+  /// The timer is canceled after signing out the user.
+  void _initAuthWatch() async {
+    await _attemptSignInWithCookie();
+    _authCheckTimer = Timer.periodic(const Duration(seconds: 2), (timer) async {
+      if ((!_sessionCookieIsPresent()) && (user != null)) {
+        log('Session cookie not present, signing out');
+        _authCheckTimer?.cancel();
+        try {
+          await _auth.signOut();
+        } catch (e) {
+          log(e);
+        }
+      }
+    });
   }
 
   /// Subscribes to authentication state changes and updates the user accordingly.
@@ -106,6 +129,13 @@ class PwiAuth {
     } catch (e) {
       // Signed out
       log(e);
+
+      if (e.toString().contains(_notSignedInMessage)) {
+        // do nothing
+      } else {
+        _errors.add(e.toString());
+      }
+
       user = null;
       _controller.add(null);
     }
@@ -116,7 +146,7 @@ class PwiAuth {
   /// Throws an [Exception] if not signed in.
   Future<String> _checkAuthStatus() async {
     if (!_sessionCookieIsPresent()) {
-      throw Exception('not-signed-in');
+      throw Exception(_notSignedInMessage);
     }
 
     final client = BrowserClient()..withCredentials = true;
@@ -130,7 +160,7 @@ class PwiAuth {
     }
 
     if (response.statusCode != 200) {
-      throw Exception('not-signed-in');
+      throw Exception(_notSignedInMessage);
     }
 
     return response.body;
