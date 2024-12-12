@@ -1,0 +1,23 @@
+name: Update Patch Version
+on:
+  push:
+    branches: [ main ]
+jobs:
+  increment-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Increment patch version
+        run: |
+          old_version=$(grep '^version:' pubspec.yaml | sed 's/version: //')
+          IFS='.' read -r major minor patch <<< "$old_version"
+          new_patch=$((patch+1))
+          new_version="$major.$minor.$new_patch"
+          sed -i "s/version: .*/version: $new_version/g" pubspec.yaml
+      - name: Commit changes
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add pubspec.yaml
+          git commit -m "Increment patch version"
+          git push
