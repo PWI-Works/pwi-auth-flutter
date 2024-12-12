@@ -8,10 +8,7 @@ import 'package:pwi_auth/utils.dart';
 import 'auth_check_view_model.dart';
 import 'login_page.dart';
 
-final RouteObserver<ModalRoute<void>> routeObserver =
-    RouteObserver<ModalRoute<void>>();
-
-class AuthCheck extends ViewWidget<AuthCheckViewModel> with RouteAware {
+class AuthCheck extends ViewWidget<AuthCheckViewModel> {
   AuthCheck(
       {super.key,
       required String authenticatedRoute,
@@ -32,8 +29,6 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> with RouteAware {
       viewModel.waitAuthCheckLoops ++;
       return;
     }
-
-    viewModel.redirectLoopRunning = false;
 
     switch (viewModel.isSignedIn) {
       case true:
@@ -100,17 +95,5 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> with RouteAware {
         ],
       ),
     );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    routeObserver.subscribe(this, ModalRoute.of(context)!);
-  }
-
-  @override
-  void didPopNext() {
-    // Called when this route is again visible after popping a next route
-    _waitCheckAuth();
   }
 }
