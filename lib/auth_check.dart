@@ -22,42 +22,19 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
     }
   }
 
-  void _waitCheckAuth() async {
-    if (!viewModel.authChecked) {
-      viewModel.waitAuthCheckLoops ++;
-      // wait for auth check to complete
-      await Future.delayed(const Duration(milliseconds: 300), _waitCheckAuth);
-      return;
-    }
-
-    switch (viewModel.isSignedIn) {
-      case true:
-        log("User is signed in, redirecting to ${viewModel.authenticatedRoute}");
-        Navigator.of(context)
-            .pushReplacementNamed(viewModel.authenticatedRoute);
-        break;
-      case false:
-        log("User is not signed in, redirecting to login page");
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => LoginPage(
-              appTitle: viewModel.appTitle,
-              authenticatedRoute: viewModel.authenticatedRoute,
-            ),
-          ),
-        );
-        break;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     log("building AuthCheck view, redirectLoopRunning: ${viewModel.redirectLoopRunning}, authChecked: ${viewModel.authChecked}, isSignedIn: ${viewModel.isSignedIn}");
 
+    if (viewModel.authChecked) {
+      _navigate();
+      return const SizedBox.shrink();
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!viewModel.redirectLoopRunning) {
         viewModel.redirectLoopRunning = true;
-        _waitCheckAuth();
+        _delayedNavigate();
       }
     });
 
@@ -95,5 +72,37 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
         ],
       ),
     );
+  }
+
+  void _delayedNavigate() async {
+    if (!viewModel.authChecked) {
+      viewModel.waitAuthCheckLoops++;
+      // wait for auth check to complete
+      await Future.delayed(const Duration(milliseconds: 300), _delayedNavigate);
+      return;
+    }
+
+    _navigate();
+  }
+
+  _navigate() {
+    switch (viewModel.isSignedIn) {
+      case true:
+        log("User is signed in, redirecting to ${viewModel.authenticatedRoute}");
+        Navigator.of(context).pushNamedAndRemoveUntil(
+            viewModel.authenticatedRoute, (route) => false);
+        break;
+      case false:
+        log("User is not signed in, redirecting to login page");
+        Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => LoginPage(
+                appTitle: viewModel.appTitle,
+                authenticatedRoute: viewModel.authenticatedRoute,
+              ),
+            ),
+                (route) => false);
+        break;
+    }
   }
 }
