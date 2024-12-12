@@ -30,6 +30,8 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> with RouteAware {
       return;
     }
 
+    viewModel.redirectLoopRunning = false;
+
     switch (viewModel.isSignedIn) {
       case true:
         log("User is signed in, redirecting to ${viewModel.authenticatedRoute}");
