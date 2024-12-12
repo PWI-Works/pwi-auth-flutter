@@ -6,17 +6,18 @@ import 'package:pwi_auth/utils.dart';
 import 'auth_check_view_model.dart';
 import 'login_page.dart';
 
-final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+final RouteObserver<ModalRoute<void>> routeObserver =
+    RouteObserver<ModalRoute<void>>();
 
 class AuthCheck extends ViewWidget<AuthCheckViewModel> with RouteAware {
   AuthCheck(
       {super.key,
       required String authenticatedRoute,
-      required String appTitle, bool loggingEnabled = false})
+      required String appTitle,
+      bool loggingEnabled = false})
       : super(
             builder: () => AuthCheckViewModel(
-                authenticatedRoute: authenticatedRoute,
-                appTitle: appTitle)){
+                authenticatedRoute: authenticatedRoute, appTitle: appTitle)) {
     if (!enableLogs) {
       enableLogs = loggingEnabled;
     }
@@ -60,9 +61,38 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> with RouteAware {
       }
     });
 
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
+    return Scaffold(
+      body: Stack(
+        children: [
+          ListView(
+            children: [
+              SizedBox(height: MediaQuery.of(context).size.height * 0.4),
+              const Center(
+                child: Column(
+                  children: [
+                    Text(
+                      "Checking Login Status...",
+                      style: TextStyle(fontSize: 20),
+                    ),
+                    SizedBox(height: 20),
+                    CircularProgressIndicator(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Positioned(
+            bottom: 20,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Text(
+                "debug info: redirectLoopRunning: ${viewModel.redirectLoopRunning}, authChecked: ${viewModel.authChecked}, isSignedIn: ${viewModel.isSignedIn}",
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
