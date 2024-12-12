@@ -91,15 +91,11 @@ class LoginPage extends StatelessWidget {
         ),
       ],
       onSubmitAnimationCompleted: () {
-        log("Submit animation completed. Navigating to AuthCheck page.");
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => AuthCheck(
-              appTitle: appTitle,
-              authenticatedRoute: authenticatedRoute,
-            ),
-          ),
-        );
+        if (_auth.signedIn) {
+          Navigator.of(context).pushNamedAndRemoveUntil(
+              authenticatedRoute, (route) => false);
+          return;
+        }
       },
       onRecoverPassword: _recoverPassword,
     );
