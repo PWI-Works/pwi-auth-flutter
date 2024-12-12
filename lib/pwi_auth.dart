@@ -88,6 +88,22 @@ class PwiAuth {
     });
   }
 
+  /// Indicates whether a manual check of the authentication status is currently in progress.
+  static bool _forceCheckingAuth = false;
+
+  /// Forces a check of the authentication status by attempting to sign in with a session cookie.
+  ///
+  /// This method calls `_attemptSignInWithCookie` to try signing in the user using a session cookie.
+  /// It is useful for manually triggering an authentication check when needed.
+  Future<void> forceCheckAuth() async {
+    if (_forceCheckingAuth) {
+      return;
+    }
+    _forceCheckingAuth = true;
+    await _attemptSignInWithCookie();
+    _forceCheckingAuth = false;
+  }
+
   /// Subscribes to authentication state changes and updates the user accordingly.
   void _subscribeToAuthChanges() {
     _authSub = _auth.authStateChanges().listen((user) async {

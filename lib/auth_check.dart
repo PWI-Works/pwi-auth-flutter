@@ -29,7 +29,7 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> with RouteAware {
     if (!viewModel.authChecked) {
       // wait for auth check to complete
       await Future.delayed(const Duration(milliseconds: 300), _waitCheckAuth);
-      viewModel.loops ++;
+      viewModel.waitAuthCheckLoops ++;
       return;
     }
 
@@ -92,7 +92,7 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> with RouteAware {
             right: 0,
             child: Center(
               child: Text(
-                "debug info: redirectLoopRunning: ${viewModel.redirectLoopRunning}, authChecked: ${viewModel.authChecked}, isSignedIn: ${viewModel.isSignedIn}, loops: ${viewModel.loops}${viewModel.error != null ? ', error: ${viewModel.error}' : ''}",
+                "debug info: redirectLoopRunning: ${viewModel.redirectLoopRunning}, authChecked: ${viewModel.authChecked}, isSignedIn: ${viewModel.isSignedIn}, loops: ${viewModel.waitAuthCheckLoops}${viewModel.error != null ? ', error: ${viewModel.error}' : ''}",
                 style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
             ),

@@ -26,11 +26,12 @@ class AuthCheckViewModel extends ViewModel {
       buildView();
   }
 
-  int _loops = 0;
-  int get loops => _loops;
-  set loops(int value) {
-      _loops = value;
-      if (_loops == 3 && !authChecked) {
+  int _waitAuthCheckLoops = 0;
+  int get waitAuthCheckLoops => _waitAuthCheckLoops;
+  set waitAuthCheckLoops(int value) {
+      _waitAuthCheckLoops = value;
+      if (_waitAuthCheckLoops % 3 == 0 && !authChecked) {
+        _auth.forceCheckAuth();
       }
       buildView();
   }
