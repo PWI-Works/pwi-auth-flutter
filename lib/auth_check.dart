@@ -8,7 +8,9 @@ import 'package:pwi_auth/utils.dart';
 import 'auth_check_view_model.dart';
 import 'login_page.dart';
 
-class AuthCheck extends ViewWidget<AuthCheckViewModel> {
+final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+
+class AuthCheck extends ViewWidget<AuthCheckViewModel> with RouteAware {
   AuthCheck(
       {super.key,
       required String authenticatedRoute,
@@ -48,20 +50,11 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
         );
         break;
     }
-
-    viewModel.redirectLoopRunning = false;
   }
 
   @override
   Widget build(BuildContext context) {
     log("building AuthCheck view, redirectLoopRunning: ${viewModel.redirectLoopRunning}, authChecked: ${viewModel.authChecked}, isSignedIn: ${viewModel.isSignedIn}");
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!viewModel.redirectLoopRunning) {
-        viewModel.redirectLoopRunning = true;
-        _waitCheckAuth();
-      }
-    });
 
     return Scaffold(
       body: Stack(
@@ -97,5 +90,21 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
         ],
       ),
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+    if (!viewModel.redirectLoopRunning) {
+      viewModel.redirectLoopRunning = true;
+      _waitCheckAuth();
+    }
+  }
+
+  @override
+  void didPopNext() {
+    // Called when this route is again visible after popping a next route
+    _waitCheckAuth();
   }
 }
