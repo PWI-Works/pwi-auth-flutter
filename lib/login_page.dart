@@ -15,7 +15,8 @@ class LoginPage extends StatelessWidget {
   final String appTitle;
   final String authenticatedRoute;
 
-  LoginPage({super.key, required this.appTitle, required this.authenticatedRoute});
+  LoginPage(
+      {super.key, required this.appTitle, required this.authenticatedRoute});
 
   Future<String?> _signInWithCredentials(LoginData data) async {
     try {
@@ -91,11 +92,8 @@ class LoginPage extends StatelessWidget {
         ),
       ],
       onSubmitAnimationCompleted: () {
-        if (_auth.signedIn) {
-          Navigator.of(context).pushNamedAndRemoveUntil(
-              authenticatedRoute, (route) => false);
-          return;
-        }
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(authenticatedRoute, (route) => false);
       },
       onRecoverPassword: _recoverPassword,
     );
