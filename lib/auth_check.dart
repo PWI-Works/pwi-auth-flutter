@@ -42,22 +42,17 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
     return Scaffold(
       body: Stack(
         children: [
-          ListView(
-            children: [
-              SizedBox(height: MediaQuery.of(context).size.height * 0.4),
-              const Center(
-                child: Column(
-                  children: [
-                    Text(
-                      "Checking Login Status...",
-                      style: TextStyle(fontSize: 20),
-                    ),
-                    SizedBox(height: 20),
-                    CircularProgressIndicator(),
-                  ],
+          const Center(
+            child: Column(
+              children: [
+                Text(
+                  "Checking Login Status...",
+                  style: TextStyle(fontSize: 20),
                 ),
-              ),
-            ],
+                SizedBox(height: 20),
+                CircularProgressIndicator(),
+              ],
+            ),
           ),
           Positioned(
             bottom: 20,
@@ -102,7 +97,7 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
                 authenticatedRoute: viewModel.authenticatedRoute,
               ),
             ),
-                (route) => false);
+            (route) => false);
         break;
     }
   }
