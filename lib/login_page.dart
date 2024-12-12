@@ -5,9 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:pwi_auth/pwi_auth.dart';
-import 'package:pwi_auth/utils.dart';
-
-import 'auth_check.dart';
 
 class LoginPage extends StatelessWidget {
   final PwiAuth _auth = PwiAuth(useSessionCookie: !kDebugMode);
