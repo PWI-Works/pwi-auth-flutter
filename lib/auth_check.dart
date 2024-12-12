@@ -48,8 +48,6 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
         );
         break;
     }
-
-    viewModel.redirectLoopRunning = false;
   }
 
   @override
