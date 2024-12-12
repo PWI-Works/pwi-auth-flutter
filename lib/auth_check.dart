@@ -59,17 +59,18 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
               ),
             ],
           ),
-          Positioned(
-            bottom: 20,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Text(
-                "debug info: redirectLoopRunning: ${viewModel.redirectLoopRunning}, authChecked: ${viewModel.authChecked}, isSignedIn: ${viewModel.isSignedIn}, loops: ${viewModel.waitAuthCheckLoops}${viewModel.error != null ? ', error: ${viewModel.error}' : ''}",
-                style: const TextStyle(fontSize: 16, color: Colors.grey),
+          if (enableLogs)
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Text(
+                  "debug info: redirectLoopRunning: ${viewModel.redirectLoopRunning}, authChecked: ${viewModel.authChecked}, isSignedIn: ${viewModel.isSignedIn}, loops: ${viewModel.waitAuthCheckLoops}${viewModel.error != null ? ', error: ${viewModel.error}' : ''}",
+                  style: const TextStyle(fontSize: 16, color: Colors.grey),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
