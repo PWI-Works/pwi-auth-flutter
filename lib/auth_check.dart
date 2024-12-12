@@ -20,12 +20,13 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
     if (!enableLogs) {
       enableLogs = loggingEnabled;
     }
-    _waitCheckAuth();
   }
 
   @override
   Widget build(BuildContext context) {
     log("building AuthCheck view, redirectLoopRunning: ${viewModel.redirectLoopRunning}, authChecked: ${viewModel.authChecked}, isSignedIn: ${viewModel.isSignedIn}");
+
+    _waitCheckAuth();
 
     return Scaffold(
       body: Stack(
@@ -64,6 +65,10 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
   }
 
   void _waitCheckAuth() async {
+    if (viewModel.redirectLoopRunning) {
+      return;
+    }
+
     viewModel.redirectLoopRunning = true;
     viewModel.waitAuthCheckLoops++;
 
