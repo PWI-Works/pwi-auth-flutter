@@ -33,7 +33,7 @@ class SemanticColors {
   static const Color onOrangeSeniority = Color(0xFF2C2721);
 
   /// The color used for yellow seniority levels.
-  static const Color yellowSeniority = Color(0xFFF2E55A);
+  static const Color yellowSeniority = Color(0xFFE5D51A);
 
   /// The color used for text/icons on yellow seniority backgrounds.
   static const Color onYellowSeniority = Color(0xFF2C2B21);
