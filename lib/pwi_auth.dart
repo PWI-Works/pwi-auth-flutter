@@ -151,6 +151,10 @@ class PwiAuth {
   /// It then attempts to sign in the user with the custom token obtained from `_checkAuthStatus`.
   /// If an error occurs during the process, it logs the error, sets the `user` to null, and adds null to the `_controller` stream.
   Future<void> _attemptSignInWithCookie() async {
+    if (!useSessionCookie) {
+      log('_attemptSignInWithCookie called when useSessionCookie == false!');
+      return;
+    }
     log('Attempting to sign in with cookie');
     try {
       final token = await _checkAuthStatus();
