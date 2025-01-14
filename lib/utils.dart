@@ -7,7 +7,9 @@ bool enableLogs = false;
 
 /// Logs a [message] if logging is enabled.
 void log(Object? message) {
-  if (kDebugMode) {
-    print(message);
+  if (enableLogs) {
+    if (kDebugMode) {
+      print(message);
+    }
   }
 }
