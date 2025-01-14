@@ -16,11 +16,11 @@ class PwiAuth {
 
   /// Private constructor
   PwiAuth._({
-    bool? useSessionCookie,
     bool loggingEnabled = false,
-  }) : useSessionCookie = useSessionCookie ?? !kDebugMode {
+  }) : useSessionCookie =
+            !kDebugMode && kIsWeb && Uri.base.host.contains('pwiworks.app') {
     enableLogs = loggingEnabled;
-    log('PwiAuth created with useSessionCookie = ${this.useSessionCookie}');
+    log('PwiAuth created with useSessionCookie = useSessionCookie');
     _subscribeToAuthChanges();
 
     if (this.useSessionCookie) {
@@ -44,11 +44,9 @@ class PwiAuth {
   ///
   /// \returns The singleton instance of PwiAuth.
   factory PwiAuth({
-    bool? useSessionCookie,
     bool loggingEnabled = false,
   }) {
     _instance ??= PwiAuth._(
-      useSessionCookie: useSessionCookie,
       loggingEnabled: loggingEnabled,
     );
     return _instance!;

@@ -1,13 +1,12 @@
 /// The PwiAuth library provides authentication functionalities for the PWI application.
 library pwi_auth;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:pwi_auth/pwi_auth.dart';
 
 class LoginPage extends StatelessWidget {
-  final PwiAuth _auth = PwiAuth(useSessionCookie: !kDebugMode);
+  final PwiAuth _auth = PwiAuth();
 
   final String appTitle;
   final void Function(BuildContext context) onAuthenticated;
