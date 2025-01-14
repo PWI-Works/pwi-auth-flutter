@@ -74,7 +74,10 @@ class PwiAuth {
   ///
   /// The timer is canceled after signing out the user.
   void _initAuthWatch() async {
-    await _attemptSignInWithCookie();
+    if (useSessionCookie) {
+      await _attemptSignInWithCookie();
+    }
+
     log('Initializing auth watch');
     _authCheckTimer = Timer.periodic(const Duration(seconds: 2), (timer) async {
       if ((!_sessionCookieIsPresent()) && (user != null)) {
