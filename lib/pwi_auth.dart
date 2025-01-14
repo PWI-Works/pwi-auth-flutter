@@ -50,9 +50,9 @@ class PwiAuth {
   /// The [useSessionCookie] parameter controls whether a session cookie is required for authentication.
   /// Use this parameter to disable session cookie checks when testing from a domain that is blocked via CORS.
   PwiAuth({this.useSessionCookie = true, bool loggingEnabled = false}) {
-    _subscribeToAuthChanges();
-
     enableLogs = loggingEnabled;
+    log('PwiAuth created with useSessionCookie = $useSessionCookie');
+    _subscribeToAuthChanges();    
 
     if (useSessionCookie) {
       _initAuthWatch();
@@ -155,7 +155,7 @@ class PwiAuth {
       log('_attemptSignInWithCookie called when useSessionCookie == false!');
       return;
     }
-    log('Attempting to sign in with cookie');
+    log('Attempting to sign in with cookie (useSessionCookie = $useSessionCookie)');
     try {
       final token = await _checkAuthStatus();
       _auth.signInWithCustomToken(token);
