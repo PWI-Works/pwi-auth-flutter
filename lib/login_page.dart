@@ -10,10 +10,10 @@ class LoginPage extends StatelessWidget {
   final PwiAuth _auth = PwiAuth(useSessionCookie: !kDebugMode);
 
   final String appTitle;
-  final String authenticatedRoute;
+  final void Function(BuildContext context) onAuthenticated;
 
   LoginPage(
-      {super.key, required this.appTitle, required this.authenticatedRoute});
+      {super.key, required this.appTitle, required this.onAuthenticated});
 
   Future<String?> _signInWithCredentials(LoginData data) async {
     try {
@@ -88,10 +88,7 @@ class LoginPage extends StatelessWidget {
           },
         ),
       ],
-      onSubmitAnimationCompleted: () {
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil(authenticatedRoute, (route) => false);
-      },
+      onSubmitAnimationCompleted: () => onAuthenticated(context),
       onRecoverPassword: _recoverPassword,
     );
   }
