@@ -4,6 +4,7 @@ library pwi_auth;
 import 'dart:async';
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/browser_client.dart';
 import 'package:pwi_auth/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -11,15 +12,69 @@ import 'package:web/web.dart';
 
 /// A class that provides authentication functionalities, including sign-in, sign-up, and session management.
 class PwiAuth {
+  // #region Singleton Implementation
+
+  /// Private constructor
+  PwiAuth._({
+    bool? useSessionCookie,
+    bool loggingEnabled = false,
+  }) : useSessionCookie = useSessionCookie ?? !kDebugMode {
+    enableLogs = loggingEnabled;
+    log('PwiAuth created with useSessionCookie = ${this.useSessionCookie}');
+    _subscribeToAuthChanges();
+
+    if (this.useSessionCookie) {
+      _initAuthWatch();
+    } else {
+      // if not using session cookie, assume auth status is current
+      _authStatusChecked = true;
+    }
+  }
+
+  /// The singleton instance
+  static PwiAuth? _instance;
+
+  /// Gets the singleton instance of PwiAuth
+  ///
+  /// If the instance does not already exist, it creates a new one with the specified
+  /// [useSessionCookie] and [loggingEnabled] parameters.
+  ///
+  /// \param useSessionCookie - Optional. Indicates whether to use session cookies for authentication.
+  /// \param loggingEnabled - Optional. Indicates whether logging is enabled. Defaults to false.
+  ///
+  /// \returns The singleton instance of PwiAuth.
+  factory PwiAuth({
+    bool? useSessionCookie,
+    bool loggingEnabled = false,
+  }) {
+    _instance ??= PwiAuth._(
+      useSessionCookie: useSessionCookie,
+      loggingEnabled: loggingEnabled,
+    );
+    return _instance!;
+  }
+
+  // #endregion
   static const String _notSignedInMessage = "not-signed-in";
 
   // Private variables
+  /// The endpoint URL for the authentication service.
   final String _endPoint = 'auth.pwiworks.app';
-  User? user;
+
+  /// An instance of FirebaseAuth used for authentication operations.
   final _auth = FirebaseAuth.instance;
+
+  /// A timer that periodically checks the authentication status.
   Timer? _authCheckTimer;
+
+  /// A completer used to manage the sign-out process.
   Completer<void>? _signOutCompleter;
+
+  /// A subscription to the authentication state changes.
   StreamSubscription<User?>? _authSub;
+
+  /// The currently authenticated user, or null if no user is signed in.
+  User? user;
 
   /// A stream that emits authentication state changes.
   final StreamController<User?> _controller =
@@ -38,29 +93,14 @@ class PwiAuth {
   /// Indicates whether the user is currently signed in.
   bool get signedIn => user != null;
 
+  /// Indicates whether to use session cookies for authentication.
   final bool useSessionCookie;
 
+  /// A flag indicating whether the authentication status has been checked.
   static bool _authStatusChecked = false;
 
+  /// Returns whether the authentication status has been checked.
   bool get authStatusChecked => _authStatusChecked;
-
-  /// Creates an instance of [PwiAuth] with the given endpoint.
-  ///
-  /// The [loggingEnabled] parameter controls whether logging is enabled.
-  /// The [useSessionCookie] parameter controls whether a session cookie is required for authentication.
-  /// Use this parameter to disable session cookie checks when testing from a domain that is blocked via CORS.
-  PwiAuth({this.useSessionCookie = true, bool loggingEnabled = false}) {
-    enableLogs = loggingEnabled;
-    log('PwiAuth created with useSessionCookie = $useSessionCookie');
-    _subscribeToAuthChanges();    
-
-    if (useSessionCookie) {
-      _initAuthWatch();
-    } else {
-      // if not using session cookie, assume auth status is current
-      _authStatusChecked = true;
-    }
-  }
 
   /// Initializes the authentication watch process.
   ///
