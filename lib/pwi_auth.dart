@@ -110,6 +110,9 @@ class PwiAuth {
     _forceCheckingAuth = false;
   }
 
+  // Add a flag to track sign in state
+  bool _isSigningIn = false;
+
   /// Subscribes to authentication state changes and updates the user accordingly.
   void _subscribeToAuthChanges() {
     _authSub = _auth.authStateChanges().listen((user) async {
@@ -119,8 +122,9 @@ class PwiAuth {
           _signOutCompleter!.complete();
           _signOutCompleter = null;
         }
-        if (useSessionCookie) {
-          _attemptSignInWithCookie();
+        // Only attempt cookie sign in if we're not in the middle of a regular sign in
+        if (useSessionCookie && !_isSigningIn) {
+          await _attemptSignInWithCookie();
         } else {
           this.user = null;
           _controller.add(null);
@@ -242,6 +246,7 @@ class PwiAuth {
   ///
   /// Throws an [Exception] if sign-in fails.
   Future<void> signIn({required String email, required String password}) async {
+    _isSigningIn = true;
     try {
       final userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
@@ -265,6 +270,8 @@ class PwiAuth {
       }
 
       throw "Error signing in. Try again later";
+    } finally {
+      _isSigningIn = false;
     }
   }
 
