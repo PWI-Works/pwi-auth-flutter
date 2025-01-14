@@ -75,6 +75,7 @@ class PwiAuth {
   /// The timer is canceled after signing out the user.
   void _initAuthWatch() async {
     await _attemptSignInWithCookie();
+    log('Initializing auth watch');
     _authCheckTimer = Timer.periodic(const Duration(seconds: 2), (timer) async {
       if ((!_sessionCookieIsPresent()) && (user != null)) {
         log('Session cookie not present, signing out');
@@ -96,12 +97,15 @@ class PwiAuth {
   /// This method calls `_attemptSignInWithCookie` to try signing in the user using a session cookie.
   /// It is useful for manually triggering an authentication check when needed.
   Future<void> forceCheckAuth() async {
+    log('Forcing auth check');
     if (!useSessionCookie) {
+      log('Session cookie not used, skipping auth check force check as it is not needed.');
       _authStatusChecked = true;
       return;
     }
 
     if (_forceCheckingAuth) {
+      log('Auth check already in progress, skipping force check.');
       return;
     }
 
@@ -116,7 +120,7 @@ class PwiAuth {
   /// Subscribes to authentication state changes and updates the user accordingly.
   void _subscribeToAuthChanges() {
     _authSub = _auth.authStateChanges().listen((user) async {
-      log(user);
+      log("PwiAuth user has changed: $user");
       if (user == null) {
         if (_signOutCompleter != null) {
           _signOutCompleter!.complete();
@@ -144,6 +148,7 @@ class PwiAuth {
   /// It then attempts to sign in the user with the custom token obtained from `_checkAuthStatus`.
   /// If an error occurs during the process, it logs the error, sets the `user` to null, and adds null to the `_controller` stream.
   Future<void> _attemptSignInWithCookie() async {
+    log('Attempting to sign in with cookie');
     try {
       final token = await _checkAuthStatus();
       _auth.signInWithCustomToken(token);
@@ -170,6 +175,7 @@ class PwiAuth {
   ///
   /// Throws an [Exception] if not signed in.
   Future<String> _checkAuthStatus() async {
+    log('Checking auth status from API.');
     if (!_sessionCookieIsPresent()) {
       throw Exception(_notSignedInMessage);
     }
