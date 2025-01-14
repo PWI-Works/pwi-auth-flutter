@@ -17,9 +17,8 @@ class PwiAuth {
   /// Private constructor
   PwiAuth._({
     bool? useSessionCookie,
-    bool loggingEnabled = false,
+    this.enableLogs = false,
   }) : useSessionCookie = useSessionCookie ?? !kDebugMode {
-    enableLogs = loggingEnabled;
     log('PwiAuth created with useSessionCookie = ${this.useSessionCookie}');
     _subscribeToAuthChanges();
 
@@ -49,10 +48,12 @@ class PwiAuth {
   }) {
     _instance ??= PwiAuth._(
       useSessionCookie: useSessionCookie,
-      loggingEnabled: loggingEnabled,
+      enableLogs: loggingEnabled,
     );
     return _instance!;
   }
+
+  bool enableLogs;
 
   // #endregion
   static const String _notSignedInMessage = "not-signed-in";
