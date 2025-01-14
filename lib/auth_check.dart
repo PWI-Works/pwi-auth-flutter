@@ -4,7 +4,6 @@ library pwi_auth;
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mvvm_plus/mvvm_plus.dart';
-import 'package:pwi_auth/pwi_auth.dart';
 import 'package:pwi_auth/utils.dart';
 import 'auth_check_view_model.dart';
 import 'login_page.dart';
@@ -18,8 +17,8 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
       : super(
             builder: () => AuthCheckViewModel(
                 authenticatedRoute: authenticatedRoute, appTitle: appTitle)) {
-    if (!PwiAuth().enableLogs) {
-      PwiAuth().enableLogs = loggingEnabled;
+    if (!enableLogs) {
+      enableLogs = loggingEnabled;
     }
   }
 
@@ -60,7 +59,7 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
               ),
             ],
           ),
-          if (PwiAuth().enableLogs)
+          if (enableLogs)
             Positioned(
               bottom: 20,
               left: 0,

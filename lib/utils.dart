@@ -2,13 +2,12 @@
 library pwi_auth;
 
 import 'package:flutter/foundation.dart';
-import 'package:pwi_auth/pwi_auth.dart';
+
+bool enableLogs = false;
 
 /// Logs a [message] if logging is enabled.
 void log(Object? message) {
-  if (PwiAuth().enableLogs) {
-    if (kDebugMode) {
-      print(message);
-    }
+  if (kDebugMode) {
+    print(message);
   }
 }
