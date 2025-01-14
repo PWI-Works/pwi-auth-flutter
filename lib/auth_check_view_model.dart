@@ -9,6 +9,7 @@ class AuthCheckViewModel extends ViewModel {
   late final PwiAuth _auth;
   final String authenticatedRoute;
   final String appTitle;
+  final bool useGoRouter;
 
   late final StreamSubscription _authSubscription;
   late final StreamSubscription _errorSubscription;
@@ -47,8 +48,11 @@ class AuthCheckViewModel extends ViewModel {
     buildView();
   }
 
-  AuthCheckViewModel(
-      {required this.authenticatedRoute, required this.appTitle}) {
+  AuthCheckViewModel({
+    required this.authenticatedRoute,
+    required this.appTitle,
+    required this.useGoRouter,
+  }) {
     try {
       _auth = get<PwiAuth>();
     } catch (e) {

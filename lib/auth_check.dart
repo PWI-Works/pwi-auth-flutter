@@ -3,20 +3,26 @@ library pwi_auth;
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mvvm_plus/mvvm_plus.dart';
 import 'package:pwi_auth/utils.dart';
 import 'auth_check_view_model.dart';
 import 'login_page.dart';
 
 class AuthCheck extends ViewWidget<AuthCheckViewModel> {
-  AuthCheck(
-      {super.key,
-      required String authenticatedRoute,
-      required String appTitle,
-      bool loggingEnabled = false})
-      : super(
-            builder: () => AuthCheckViewModel(
-                authenticatedRoute: authenticatedRoute, appTitle: appTitle)) {
+  AuthCheck({
+    super.key,
+    required String authenticatedRoute,
+    required String appTitle,
+    bool useGoRouter = false,
+    bool loggingEnabled = false,
+  }) : super(
+          builder: () => AuthCheckViewModel(
+            authenticatedRoute: authenticatedRoute,
+            appTitle: appTitle,
+            useGoRouter: useGoRouter,
+          ),
+        ) {
     if (!enableLogs) {
       enableLogs = loggingEnabled;
     }
@@ -87,12 +93,21 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
     _navigate();
   }
 
+  void _navigateWithNavigator(BuildContext context) => Navigator.of(context)
+      .pushNamedAndRemoveUntil(
+      viewModel.authenticatedRoute, (route) => false);
+
+  void _navigateWithGoRouter(BuildContext context) => context.go(viewModel.authenticatedRoute);
+
+  void _onAuthenticated(BuildContext context) => viewModel.useGoRouter
+      ? _navigateWithGoRouter
+      : _navigateWithNavigator;
+
   _navigate() {
     switch (viewModel.isSignedIn) {
       case true:
         log("User is signed in, redirecting to ${viewModel.authenticatedRoute}");
-        Navigator.of(context).pushNamedAndRemoveUntil(
-            viewModel.authenticatedRoute, (route) => false);
+        _onAuthenticated(context);
         break;
       case false:
         log("User is not signed in, redirecting to login page");
@@ -100,8 +115,7 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
             MaterialPageRoute(
               builder: (context) => LoginPage(
                 appTitle: viewModel.appTitle,
-                onAuthenticated: (context) => Navigator.of(context)
-                    .pushNamedAndRemoveUntil(viewModel.authenticatedRoute, (route) => false),
+                onAuthenticated: _onAuthenticated,
               ),
             ),
             (route) => false);
