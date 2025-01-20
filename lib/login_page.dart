@@ -11,8 +11,7 @@ class LoginPage extends StatelessWidget {
   final String appTitle;
   final void Function(BuildContext context) onAuthenticated;
 
-  LoginPage(
-      {super.key, required this.appTitle, required this.onAuthenticated});
+  LoginPage({super.key, required this.appTitle, required this.onAuthenticated});
 
   Future<String?> _signInWithCredentials(LoginData data) async {
     try {
@@ -60,6 +59,9 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final showGoogleLogin = Uri.base.host.contains('pwiworks.app') ||
+        Uri.base.host.contains('localhost');
+
     return FlutterLogin(
       title: appTitle,
       logo: const AssetImage('packages/pwi_auth/assets/images/pwi_logo.png'),
@@ -77,16 +79,18 @@ class LoginPage extends StatelessWidget {
             'If you already have an account with us, we\'ll send you an email to reset your password.',
         providersTitleFirst: "or",
       ),
-      loginProviders: <LoginProvider>[
-        LoginProvider(
-          button: Buttons.google,
-          label: 'Sign in with Google',
-          callback: () async {
-            await _signInWithGoogle();
-            return;
-          },
-        ),
-      ],
+      loginProviders: showGoogleLogin
+          ? <LoginProvider>[
+              LoginProvider(
+                button: Buttons.google,
+                label: 'Sign in with Google',
+                callback: () async {
+                  await _signInWithGoogle();
+                  return;
+                },
+              ),
+            ]
+          : [],
       onSubmitAnimationCompleted: () => onAuthenticated(context),
       onRecoverPassword: _recoverPassword,
     );
