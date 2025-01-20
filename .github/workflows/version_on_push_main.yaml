@@ -35,12 +35,14 @@ jobs:
             --arg author "$AUTHOR" \
             --arg project "pwi-auth-flutter" \
             --arg channel "live" \
+            --arg app "auth" \
             '{
               text: $text,
               message: $message,
               author: $author,
               project: $project,
-              channel: $channel
+              channel: $channel,
+              app: $app
             }')
           
           # Send POST request with the constructed payload
