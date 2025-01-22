@@ -6,7 +6,7 @@ class SemanticColors {
   static const Color warning = Color(0xFFFFC800);
 
   /// The color used for text/icons on warning backgrounds.
-  static const Color onWarning = Color(0xFFFFFFFF);
+  static const Color onWarning = Color(0xFF000000);
 
   /// The color used for red seniority levels.
   static const Color redSeniority = Color(0xFFF59689);
