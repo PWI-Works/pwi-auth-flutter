@@ -14,19 +14,26 @@ import 'package:web/web.dart';
 class PwiAuth {
   // #region Singleton Implementation
 
+  /// Indicates if native Firebase Auth should be used (disables custom streaming/session logic)
+  final bool appUsesFirebaseAuth;
+
   /// Private constructor
   PwiAuth._({
     bool loggingEnabled = false,
-  }) : useSessionCookie =
-            !kDebugMode && kIsWeb && Uri.base.host.contains('pwiworks.app') {
+    this.appUsesFirebaseAuth = false,
+  })  : useSessionCookie =
+            !appUsesFirebaseAuth && !kDebugMode && kIsWeb && Uri.base.host.contains('pwiworks.app') {
     enableLogs = loggingEnabled;
-    log('PwiAuth created with useSessionCookie = useSessionCookie');
-    _subscribeToAuthChanges();
-
-    if (this.useSessionCookie) {
-      _initAuthWatch();
+    log('PwiAuth created with useSessionCookie = useSessionCookie, appUsesFirebaseAuth = $appUsesFirebaseAuth');
+    if (!appUsesFirebaseAuth) {
+      _subscribeToAuthChanges();
+      if (useSessionCookie) {
+        _initAuthWatch();
+      } else {
+        _authStatusChecked = true;
+      }
     } else {
-      // if not using session cookie, assume auth status is current
+      // If using native Firebase Auth, assume status is current
       _authStatusChecked = true;
     }
   }
@@ -35,19 +42,13 @@ class PwiAuth {
   static PwiAuth? _instance;
 
   /// Gets the singleton instance of PwiAuth
-  ///
-  /// If the instance does not already exist, it creates a new one with the specified
-  /// [useSessionCookie] and [loggingEnabled] parameters.
-  ///
-  /// \param useSessionCookie - Optional. Indicates whether to use session cookies for authentication.
-  /// \param loggingEnabled - Optional. Indicates whether logging is enabled. Defaults to false.
-  ///
-  /// \returns The singleton instance of PwiAuth.
   factory PwiAuth({
     bool loggingEnabled = false,
+    bool appUsesFirebaseAuth = false,
   }) {
     _instance ??= PwiAuth._(
       loggingEnabled: loggingEnabled,
+      appUsesFirebaseAuth: appUsesFirebaseAuth,
     );
     return _instance!;
   }
@@ -56,49 +57,50 @@ class PwiAuth {
   static const String _notSignedInMessage = "not-signed-in";
 
   // Private variables
-  /// The endpoint URL for the authentication service.
   final String _endPoint = 'auth.pwiworks.app';
-
-  /// An instance of FirebaseAuth used for authentication operations.
   final _auth = FirebaseAuth.instance;
-
-  /// A timer that periodically checks the authentication status.
   Timer? _authCheckTimer;
-
-  /// A completer used to manage the sign-out process.
   Completer<void>? _signOutCompleter;
-
-  /// A subscription to the authentication state changes.
   StreamSubscription<User?>? _authSub;
-
-  /// The currently authenticated user, or null if no user is signed in.
   User? user;
-
-  /// A stream that emits authentication state changes.
   final StreamController<User?> _controller =
       StreamController<User?>.broadcast();
-
-  /// Returns a stream of authentication state changes.
   Stream<User?> get authStateChanges => _controller.stream;
-
-  /// A stream that emits errors.
   final StreamController<String?> _errors =
       StreamController<String?>.broadcast();
-
-  /// Returns a stream of errors.
   Stream<String?> get errors => _errors.stream;
-
-  /// Indicates whether the user is currently signed in.
   bool get signedIn => user != null;
-
-  /// Indicates whether to use session cookies for authentication.
   final bool useSessionCookie;
-
-  /// A flag indicating whether the authentication status has been checked.
   static bool _authStatusChecked = false;
-
-  /// Returns whether the authentication status has been checked.
   bool get authStatusChecked => _authStatusChecked;
+  static bool _forceCheckingAuth = false;
+  bool _isSigningIn = false;
+
+  /// Forces a check of the authentication status by attempting to sign in with a session cookie.
+  ///
+  /// This method calls `_attemptSignInWithCookie` to try signing in the user using a session cookie.
+  /// It is useful for manually triggering an authentication check when needed.
+  Future<void> forceCheckAuth() async {
+    if (appUsesFirebaseAuth) {
+      _authStatusChecked = true;
+      return;
+    }
+    log('Forcing auth check');
+    if (!useSessionCookie) {
+      log('Session cookie not used, skipping auth check force check as it is not needed.');
+      _authStatusChecked = true;
+      return;
+    }
+
+    if (_forceCheckingAuth) {
+      log('Auth check already in progress, skipping force check.');
+      return;
+    }
+
+    _forceCheckingAuth = true;
+    await _attemptSignInWithCookie();
+    _forceCheckingAuth = false;
+  }
 
   /// Initializes the authentication watch process.
   ///
@@ -112,6 +114,7 @@ class PwiAuth {
   ///
   /// The timer is canceled after signing out the user.
   void _initAuthWatch() async {
+    if (appUsesFirebaseAuth) return;
     if (useSessionCookie) {
       await _attemptSignInWithCookie();
     }
@@ -130,36 +133,9 @@ class PwiAuth {
     });
   }
 
-  /// Indicates whether a manual check of the authentication status is currently in progress.
-  static bool _forceCheckingAuth = false;
-
-  /// Forces a check of the authentication status by attempting to sign in with a session cookie.
-  ///
-  /// This method calls `_attemptSignInWithCookie` to try signing in the user using a session cookie.
-  /// It is useful for manually triggering an authentication check when needed.
-  Future<void> forceCheckAuth() async {
-    log('Forcing auth check');
-    if (!useSessionCookie) {
-      log('Session cookie not used, skipping auth check force check as it is not needed.');
-      _authStatusChecked = true;
-      return;
-    }
-
-    if (_forceCheckingAuth) {
-      log('Auth check already in progress, skipping force check.');
-      return;
-    }
-
-    _forceCheckingAuth = true;
-    await _attemptSignInWithCookie();
-    _forceCheckingAuth = false;
-  }
-
-  // Add a flag to track sign in state
-  bool _isSigningIn = false;
-
   /// Subscribes to authentication state changes and updates the user accordingly.
   void _subscribeToAuthChanges() {
+    if (appUsesFirebaseAuth) return;
     _authSub = _auth.authStateChanges().listen((user) async {
       log("PwiAuth user has changed: $user");
       if (user == null) {
@@ -189,6 +165,7 @@ class PwiAuth {
   /// It then attempts to sign in the user with the custom token obtained from `_checkAuthStatus`.
   /// If an error occurs during the process, it logs the error, sets the `user` to null, and adds null to the `_controller` stream.
   Future<void> _attemptSignInWithCookie() async {
+    if (appUsesFirebaseAuth) return;
     if (!useSessionCookie) {
       log('_attemptSignInWithCookie called when useSessionCookie == false!');
       return;
@@ -220,6 +197,7 @@ class PwiAuth {
   ///
   /// Throws an [Exception] if not signed in.
   Future<String> _checkAuthStatus() async {
+    if (appUsesFirebaseAuth) throw Exception(_notSignedInMessage);
     log('Checking auth status from API.');
     if (!_sessionCookieIsPresent()) {
       throw Exception(_notSignedInMessage);
@@ -244,6 +222,7 @@ class PwiAuth {
 
   /// Checks if the session cookie is present in the browser.
   bool _sessionCookieIsPresent() {
+    if (appUsesFirebaseAuth) return false;
     final sessionCookie = document.cookie.split(';').firstWhere(
         (cookie) => cookie.trim().startsWith('__session='),
         orElse: () => '');
@@ -252,6 +231,7 @@ class PwiAuth {
 
   /// Clears the session cookie.
   Future<void> _clearSessionCookie() async {
+    if (appUsesFirebaseAuth) return;
     final url = Uri.parse('https://$_endPoint/api/clear-session-cookie');
     final client = BrowserClient()..withCredentials = true;
     await client.post(url);
@@ -259,6 +239,10 @@ class PwiAuth {
 
   /// Signs out the current user and clears the session cookie.
   Future<void> signOut() async {
+    if (appUsesFirebaseAuth) {
+      await _auth.signOut();
+      return;
+    }
     try {
       if (useSessionCookie) {
         _signOutCompleter = Completer<void>();
@@ -280,6 +264,7 @@ class PwiAuth {
   ///
   /// Throws an [Exception] if setting the session cookie fails.
   Future<void> _setSessionCookie(String idToken) async {
+    if (appUsesFirebaseAuth) return;
     final client = BrowserClient()..withCredentials = true;
 
     final url = Uri.parse('https://$_endPoint/api/set-session-cookie');
@@ -301,15 +286,13 @@ class PwiAuth {
     try {
       final userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
-
-      if (useSessionCookie) {
+      if (!appUsesFirebaseAuth && useSessionCookie) {
         final idToken = await userCredential.user?.getIdToken(true);
         await _setSessionCookie(idToken!);
       }
     } catch (e) {
       final error = e.toString();
       log(error);
-
       if (error.contains("invalid-email") ||
           error.contains("wrong-password") ||
           error.contains("invalid-credential")) {
@@ -319,7 +302,6 @@ class PwiAuth {
       } else if (error.contains("user-not-found")) {
         throw "This user does not exist";
       }
-
       throw "Error signing in. Try again later";
     } finally {
       _isSigningIn = false;
@@ -333,8 +315,7 @@ class PwiAuth {
     try {
       final provider = GoogleAuthProvider();
       final userCredential = await _auth.signInWithPopup(provider);
-
-      if (useSessionCookie) {
+      if (!appUsesFirebaseAuth && useSessionCookie) {
         final idToken = await userCredential.user?.getIdToken(true);
         await _setSessionCookie(idToken!);
       }
@@ -353,25 +334,21 @@ class PwiAuth {
       required String firstName,
       required String lastName}) async {
     try {
-      // Save the user data first so it's available when the stream gets called
-      _authSub?.cancel();
-
+      if (!appUsesFirebaseAuth) {
+        _authSub?.cancel();
+      }
       final credential = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
-
       if (credential.user == null) {
         throw "error-creating-user";
       }
-
       await credential.user!.updateDisplayName("$firstName $lastName");
-
-      if (useSessionCookie) {
+      if (!appUsesFirebaseAuth && useSessionCookie) {
         final idToken = await credential.user?.getIdToken(true);
         await _setSessionCookie(idToken!);
       }
     } catch (e) {
       log(e.toString());
-
       final error = e.toString();
       if (error.contains("invalid-email")) {
         throw "Invalid email address";
@@ -382,19 +359,20 @@ class PwiAuth {
       } else if (error.toLowerCase().contains("permission_denied")) {
         throw "Permission denied. Contact the system administrator";
       }
-
       throw "Error creating account. Try again later";
     }
   }
 
   /// Navigates the user to the sign-up page.
   Future<void> goToSignUp() async {
+    if (appUsesFirebaseAuth) return;
     final url = Uri.parse('https://$_endPoint/sign-up?redirect=${Uri.base}');
     launchUrl(url, webOnlyWindowName: '_self');
   }
 
   /// Navigates the user to the sign-in page.
   Future<void> goToSignIn() async {
+    if (appUsesFirebaseAuth) return;
     final url = Uri.parse('https://$_endPoint/sign-in?redirect=${Uri.base}');
     launchUrl(url, webOnlyWindowName: '_self');
   }
@@ -407,7 +385,7 @@ class PwiAuth {
       await _auth.sendPasswordResetEmail(email: email);
       log("Password reset email sent to $email");
     } catch (e) {
-      log("Error sending password reset email: ${e.toString()}");
+      log("Error sending password reset email: "+e.toString());
       final error = e.toString();
       if (error.contains("invalid-email")) {
         throw "Invalid email address";
@@ -420,8 +398,10 @@ class PwiAuth {
 
   /// Disposes of resources used by this instance.
   void dispose() {
-    _controller.close();
-    _authSub?.cancel();
-    _authCheckTimer?.cancel();
+    if (!appUsesFirebaseAuth) {
+      _controller.close();
+      _authSub?.cancel();
+      _authCheckTimer?.cancel();
+    }
   }
 }
