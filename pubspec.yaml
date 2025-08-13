@@ -17,6 +17,8 @@ dependencies:
   mvvm_plus: ^1.5.4
   flutter_login: ^5.0.0
   flex_color_scheme: ^8.0.2
+  flutter_layout_grid: ^2.0.8
+  rounded_loading_button_plus: ^3.0.1
 
 dev_dependencies:
   flutter_test:
