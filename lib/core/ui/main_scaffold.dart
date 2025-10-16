@@ -1,6 +1,6 @@
 // lib/ui/widgets/main_scaffold.dart
 import 'package:flutter/material.dart';
-import 'package:custom_adaptive_scaffold/custom_adaptive_scaffold.dart';
+import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import 'package:mvvm_plus/mvvm_plus.dart';
 import 'package:pwi_auth/core/router/app_router.dart';
 import 'main_scaffold_view_model.dart';
@@ -37,7 +37,7 @@ class MainScaffold extends ViewWidget<MainScaffoldViewModel> {
             // Provide destinations with icons/titles from route definitions.
             destinations: AppRouter.instance.navigationRoutes
                 .map(
-                  (route) => CustomNavigationDestination(
+                  (route) => NavigationDestination(
                     icon: Icon(route.icon),
                     selectedIcon: Icon(route.selectedIcon),
                     label: route.title,
@@ -53,6 +53,7 @@ class MainScaffold extends ViewWidget<MainScaffoldViewModel> {
             extraLargeBody: (context) => child ?? const SizedBox.shrink(),
 
             useDrawer: false,
+            navigationRailPadding: EdgeInsets.zero,
           ),
         ),
       ],

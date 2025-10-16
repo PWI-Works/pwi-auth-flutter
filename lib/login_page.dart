@@ -3,10 +3,11 @@ library pwi_auth;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
+import 'package:pwi_auth/core/default_global_controller.dart';
 import 'package:pwi_auth/pwi_auth.dart';
 
 class LoginPage extends StatelessWidget {
-  final PwiAuth _auth;
+  final PwiAuthBase _auth;
 
   final String appTitle;
   final void Function(BuildContext context) onAuthenticated;
@@ -15,8 +16,7 @@ class LoginPage extends StatelessWidget {
     super.key,
     required this.appTitle,
     required this.onAuthenticated,
-    bool appUsesFirebaseAuth = false,
-  }) : _auth = PwiAuth(appUsesFirebaseAuth: appUsesFirebaseAuth);
+  }) : _auth = DefaultGlobalController.instance.auth;
 
   Future<String?> _signInWithCredentials(LoginData data) async {
     try {

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:pwi_auth/core/default_global_controller.dart';
 import 'package:pwi_auth/core/router/app_router.dart';
 import 'package:pwi_auth/core/router/route_details.dart';
+import 'package:pwi_auth/widgets/error_screen.dart';
 import 'package:pwi_auth/widgets/loading_page.dart';
 import 'package:pwi_auth/core/ui/default_app.dart';
 import 'package:pwi_auth/themes/themes.dart';
 import 'package:pwi_auth/core/router/default_routes.dart';
+import 'package:pwi_auth/widgets/page_scaffold.dart';
 import 'mock_pwi_auth.dart';
 
 void main() {
@@ -20,7 +22,14 @@ void main() {
         title: 'Loading',
         icon: Icons.hourglass_empty,
         route: '/loading',
-        contextBuilder: (context) => const MyHomePage(title: 'Loading Page'),
+        contextBuilder: (context) => const LoadingPageScreen(),
+      ),
+      RouteDetails(
+        name: "error",
+        title: 'Error',
+        icon: Icons.error,
+        route: '/error',
+        contextBuilder: (context) => const ErrorPageScreen(),
       ),
       DefaultRoutes.settings,
     ],
@@ -29,16 +38,26 @@ void main() {
   runApp(DefaultApp(selectedTheme: Themes.purple));
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+class LoadingPageScreen extends StatelessWidget {
+  const LoadingPageScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
+    return PageScaffold(
+      title: "Loading Page",
       body: LoadingPage(initialMessage: 'Loading...'),
+    );
+  }
+}
+
+class ErrorPageScreen extends StatelessWidget {
+  const ErrorPageScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return PageScaffold(
+      title: "Error Page",
+      body: ErrorScreen(message: "An error has occurred."),
     );
   }
 }

@@ -102,6 +102,15 @@ class DefaultGlobalController extends Model {
   /// Firebase authentication wrapper the controller listens to.
   PwiAuthBase? _auth;
 
+  /// getter for the active auth instance
+  PwiAuthBase get auth {
+    if (_auth == null) {
+      throw StateError(
+          'GlobalControllerInterface has not been initialized. Call the factory constructor before accessing it.');
+    }
+    return _auth!;
+  }
+
   /// Subscription that tracks authentication state changes.
   StreamSubscription<User?>? _authSubscription;
 
