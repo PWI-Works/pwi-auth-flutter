@@ -23,11 +23,7 @@ PwiAuth is a Flutter package that provides authentication functionalities for th
 - [Usage](#usage)
   - [Import the Package](#import-the-package)
   - [Initialize PwiAuth](#initialize-pwiauth)
-  - [Sign In with Email and Password](#sign-in-with-email-and-password)
-  - [Sign Up (Create a New Account)](#sign-up-create-a-new-account)
-  - [Sign In with Google](#sign-in-with-google)
   - [Sign Out](#sign-out)
-  - [Send Password Reset Email](#send-password-reset-email)
   - [Listen to Authentication State Changes](#listen-to-authentication-state-changes)
   - [Check if User is Signed In](#check-if-user-is-signed-in)
   - [Navigate to Sign-In or Sign-Up Page](#navigate-to-sign-in-or-sign-up-page)
@@ -86,6 +82,15 @@ Ensure your backend sets cookies with the `HttpOnly` and `Secure` flags.
 
 ---
 
+## Testing
+You can test package functionality by running the app in `example`. 
+
+For convenience, we've already added a run configuration for VS Code. Pressing `F5` should run it right away.
+
+It's important to note that you must run `flutter pub upgrade` _from the example folder_ whenever you make changes to the package code.
+
+Note that the package import in `example/pubspec.yaml` is a relative import, meaning that it uses the local version of `pwi_auth`. You have immediate access to any code changes you make in the `pwi_auth` package without having to wait for it to be published.
+
 ## Usage
 
 ### Import the Package
@@ -98,6 +103,8 @@ import 'package:pwi_auth/pwi_auth.dart';
 
 Create an instance of `PwiAuth` by providing your backend endpoint. Replace `'your-backend-endpoint.com'` with your actual endpoint.
 
+**Note:** this is only necessary if you are actually using the authentication code. Otherwise, you don't need to initialize anything.
+
 ```dart
 final pwiAuth = PwiAuth('your-backend-endpoint.com', loggingEnabled: true);
 ```
@@ -105,66 +112,12 @@ final pwiAuth = PwiAuth('your-backend-endpoint.com', loggingEnabled: true);
 - **`_endPoint`**: The URL of your backend server handling authentication.
 - **`loggingEnabled`** _(optional)_: Set to `true` to enable logging for debugging purposes.
 
-### Sign In with Email and Password
-
-It is preferable to call **`pwiAuth.goToSignIn()`** if you have a hosted sign-in page
-
-```dart
-try {
-  await pwiAuth.signIn(email: 'user@example.com', password: 'your-password');
-  print('User signed in successfully');
-} catch (e) {
-  print('Sign-in error: $e');
-}
-```
-
-### Sign Up (Create a New Account)
-
-It is preferable to call **`pwiAuth.goToSignUp()`** if you have a hosted sign-up page
-
-```dart
-try {
-  await pwiAuth.signUp(
-    email: 'newuser@example.com',
-    password: 'your-password',
-    firstName: 'John',
-    lastName: 'Doe',
-  );
-  print('User signed up successfully');
-} catch (e) {
-  print('Sign-up error: $e');
-}
-```
-
-### Sign In with Google
-
-It is preferable to call **`pwiAuth.goToSignIn()`** if you have a hosted sign-in page
-
-```dart
-try {
-  await pwiAuth.signInWithGoogle();
-  print('User signed in with Google successfully');
-} catch (e) {
-  print('Google sign-in error: $e');
-}
-```
 
 ### Sign Out
 
 ```dart
 await pwiAuth.signOut();
 print('User signed out');
-```
-
-### Send Password Reset Email
-
-```dart
-try {
-  await pwiAuth.sendPasswordResetEmail('user@example.com');
-  print('Password reset email sent');
-} catch (e) {
-  print('Password reset error: $e');
-}
 ```
 
 ### Listen to Authentication State Changes
@@ -188,19 +141,6 @@ if (pwiAuth.signedIn) {
   print('No user is signed in');
 }
 ```
-
-### Navigate to Sign-In or Sign-Up Page
-
-If you have hosted sign-in or sign-up pages, you can navigate to them instead implementing your own UI:
-
-```dart
-// Navigate to the sign-up page
-await pwiAuth.goToSignUp();
-
-// Navigate to the sign-in page
-await pwiAuth.goToSignIn();
-```
-
 ---
 
 ## Methods
