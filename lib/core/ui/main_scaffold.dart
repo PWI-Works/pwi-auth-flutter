@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:custom_adaptive_scaffold/custom_adaptive_scaffold.dart';
 import 'package:mvvm_plus/mvvm_plus.dart';
-import 'package:pwi_auth/core/default_global_controller.dart';
 import 'package:pwi_auth/core/router/app_router.dart';
 import 'main_scaffold_view_model.dart';
 

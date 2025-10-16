@@ -1,37 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:pwi_auth/core/default_global_controller.dart';
 import 'package:pwi_auth/widgets/loading_page.dart';
+import 'mock_pwi_auth.dart';
 
 void main() {
+  DefaultGlobalController(
+    appTitle: 'Flutter Demo',
+    auth: MockPwiAuth(),
+  );
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final global = DefaultGlobalController.instance;
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: global.appTitle,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: global.appTitle),
     );
   }
 }
@@ -43,26 +34,9 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PageScaffold(
+    return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: LoadingPage(initialMessage: 'Loading...'),
     );
   }
 }
-
-final List<RouteDetails> navigationRoutes = [
-  RouteDetails(
-    name: RouteNames.sales,
-    title: 'Sales',
-    icon: Icons.attach_money,
-    route: '/sales',
-    contextBuilder: (context) => const SalesPage(),
-  ),
-  RouteDetails(
-    name: RouteNames.settings,
-    title: 'Settings',
-    icon: Icons.settings,
-    route: '/settings',
-    contextBuilder: (context) => SettingsPage(),
-  ),
-];

@@ -1,5 +1,4 @@
 import 'dart:async' show Future, StreamSubscription, unawaited;
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mvvm_plus/mvvm_plus.dart';
@@ -11,13 +10,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// This allows apps to inject a subclass while delegating the singleton
 /// lifecycle managed by [DefaultGlobalController].
 typedef GlobalControllerBuilder = DefaultGlobalController Function(
-    String appTitle, PwiAuth? auth);
+    String appTitle, PwiAuthBase? auth);
 
 /// Singleton that provides global application state that the UI listens to.
 ///
 /// Highlights:
 /// - Use the factory constructor to obtain the singleton. The first call must
-///   supply the application title and can optionally provide a [PwiAuth]
+///   supply the application title and can optionally provide a [PwiAuthBase]
 ///   instance. Repeated calls return the same instance and validate arguments.
 /// - Use [GlobalControllerBuilder] if you need a subclass while keeping the
 ///   existing singleton behavior and shared initialization.
@@ -33,7 +32,7 @@ class DefaultGlobalController extends Model {
   /// initialization executes.
   factory DefaultGlobalController({
     required String appTitle,
-    PwiAuth? auth,
+    PwiAuthBase? auth,
     GlobalControllerBuilder? builder,
   }) {
     final existing = _instance;
@@ -46,7 +45,7 @@ class DefaultGlobalController extends Model {
       }
       if (auth != null && !identical(existing._auth, auth)) {
         throw StateError(
-          'GlobalControllerInterface already initialized with a PwiAuth '
+          'GlobalControllerInterface already initialized with an auth '
           'instance. Dispose the current instance before supplying a new one.',
         );
       }
@@ -65,7 +64,7 @@ class DefaultGlobalController extends Model {
   /// Core constructor that performs shared initialization.
   DefaultGlobalController._internal({
     required String appTitle,
-    PwiAuth? auth,
+    PwiAuthBase? auth,
   }) : _appTitle = appTitle {
     _initializeCore(auth: auth);
   }
@@ -74,7 +73,7 @@ class DefaultGlobalController extends Model {
   @protected
   DefaultGlobalController.protected({
     required String appTitle,
-    PwiAuth? auth,
+    PwiAuthBase? auth,
   }) : this._internal(appTitle: appTitle, auth: auth);
 
   /// Singleton instance storage.
@@ -101,7 +100,7 @@ class DefaultGlobalController extends Model {
   final String _appTitle;
 
   /// Firebase authentication wrapper the controller listens to.
-  PwiAuth? _auth;
+  PwiAuthBase? _auth;
 
   /// Subscription that tracks authentication state changes.
   StreamSubscription<User?>? _authSubscription;
@@ -127,7 +126,7 @@ class DefaultGlobalController extends Model {
   late final themeMode = createProperty<ThemeMode>(ThemeMode.system);
 
   /// Sets up auth subscription and loads persisted theme preferences.
-  void _initializeCore({PwiAuth? auth}) {
+  void _initializeCore({PwiAuthBase? auth}) {
     _configureAuth(auth);
     themeMode.addListener(_saveTheme);
     // Fire-and-forget theme loading. Caller can override [onReady] if they
@@ -136,8 +135,8 @@ class DefaultGlobalController extends Model {
     onReady();
   }
 
-  /// Configures the [PwiAuth] instance and reacts to auth state changes.
-  void _configureAuth(PwiAuth? auth) {
+  /// Configures the [PwiAuthBase] instance and reacts to auth state changes.
+  void _configureAuth(PwiAuthBase? auth) {
     final resolvedAuth = auth ?? PwiAuth();
     _authSubscription?.cancel();
     _auth = resolvedAuth;

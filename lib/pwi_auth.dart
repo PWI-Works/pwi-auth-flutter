@@ -10,8 +10,34 @@ import 'package:pwi_auth/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:web/web.dart';
 
+/// Abstract contract for authentication behavior exposed by [PwiAuth].
+///
+/// This allows applications to provide custom or mocked implementations while
+/// retaining parity with the real authentication workflow surface.
+abstract class PwiAuthBase {
+  User? get user;
+  Stream<User?> get authStateChanges;
+  Stream<String?> get errors;
+  bool get signedIn;
+  bool get authStatusChecked;
+  Future<void> forceCheckAuth();
+  Future<void> signOut();
+  Future<void> signIn({required String email, required String password});
+  Future<void> signInWithGoogle();
+  Future<void> signUp({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+  });
+  Future<void> goToSignUp();
+  Future<void> goToSignIn();
+  Future<void> sendPasswordResetEmail(String email);
+  void dispose();
+}
+
 /// A class that provides authentication functionalities, including sign-in, sign-up, and session management.
-class PwiAuth {
+class PwiAuth extends PwiAuthBase {
   // #region Singleton Implementation
 
   /// Indicates if native Firebase Auth should be used (disables custom streaming/session logic)
@@ -21,8 +47,10 @@ class PwiAuth {
   PwiAuth._({
     bool loggingEnabled = false,
     this.appUsesFirebaseAuth = false,
-  })  : useSessionCookie =
-            !appUsesFirebaseAuth && !kDebugMode && kIsWeb && Uri.base.host.contains('pwiworks.app') {
+  }) : useSessionCookie = !appUsesFirebaseAuth &&
+            !kDebugMode &&
+            kIsWeb &&
+            Uri.base.host.contains('pwiworks.app') {
     enableLogs = loggingEnabled;
     log('PwiAuth created with useSessionCookie = useSessionCookie, appUsesFirebaseAuth = $appUsesFirebaseAuth');
     if (!appUsesFirebaseAuth) {
@@ -62,16 +90,23 @@ class PwiAuth {
   Timer? _authCheckTimer;
   Completer<void>? _signOutCompleter;
   StreamSubscription<User?>? _authSub;
-  User? user;
+  User? _user;
+  @override
+  User? get user => _user;
   final StreamController<User?> _controller =
       StreamController<User?>.broadcast();
+  @override
   Stream<User?> get authStateChanges => _controller.stream;
   final StreamController<String?> _errors =
       StreamController<String?>.broadcast();
+  @override
   Stream<String?> get errors => _errors.stream;
-  bool get signedIn => user != null;
+  @override
+  bool get signedIn => _user != null;
+
   final bool useSessionCookie;
   static bool _authStatusChecked = false;
+  @override
   bool get authStatusChecked => _authStatusChecked;
   static bool _forceCheckingAuth = false;
   bool _isSigningIn = false;
@@ -80,6 +115,7 @@ class PwiAuth {
   ///
   /// This method calls `_attemptSignInWithCookie` to try signing in the user using a session cookie.
   /// It is useful for manually triggering an authentication check when needed.
+  @override
   Future<void> forceCheckAuth() async {
     if (appUsesFirebaseAuth) {
       _authStatusChecked = true;
@@ -121,7 +157,7 @@ class PwiAuth {
 
     log('Initializing auth watch');
     _authCheckTimer = Timer.periodic(const Duration(seconds: 2), (timer) async {
-      if ((!_sessionCookieIsPresent()) && (user != null)) {
+      if ((!_sessionCookieIsPresent()) && (_user != null)) {
         log('Session cookie not present, signing out');
         _authCheckTimer?.cancel();
         try {
@@ -136,9 +172,9 @@ class PwiAuth {
   /// Subscribes to authentication state changes and updates the user accordingly.
   void _subscribeToAuthChanges() {
     if (appUsesFirebaseAuth) return;
-    _authSub = _auth.authStateChanges().listen((user) async {
-      log("PwiAuth user has changed: $user");
-      if (user == null) {
+    _authSub = _auth.authStateChanges().listen((firebaseUser) async {
+      log("PwiAuth user has changed: $firebaseUser");
+      if (firebaseUser == null) {
         if (_signOutCompleter != null) {
           _signOutCompleter!.complete();
           _signOutCompleter = null;
@@ -147,13 +183,13 @@ class PwiAuth {
         if (useSessionCookie && !_isSigningIn) {
           await _attemptSignInWithCookie();
         } else {
-          this.user = null;
+          _user = null;
           _controller.add(null);
         }
       } else {
         // Signed in
-        this.user = user;
-        _controller.add(user);
+        _user = firebaseUser;
+        _controller.add(firebaseUser);
       }
     });
   }
@@ -184,7 +220,7 @@ class PwiAuth {
         _errors.add(e.toString());
       }
 
-      user = null;
+      _user = null;
       _controller.add(null);
     } finally {
       if (_authStatusChecked == false) {
@@ -238,6 +274,7 @@ class PwiAuth {
   }
 
   /// Signs out the current user and clears the session cookie.
+  @override
   Future<void> signOut() async {
     if (appUsesFirebaseAuth) {
       await _auth.signOut();
@@ -281,6 +318,7 @@ class PwiAuth {
   /// Signs in a user with the given [email] and [password].
   ///
   /// Throws an [Exception] if sign-in fails.
+  @override
   Future<void> signIn({required String email, required String password}) async {
     _isSigningIn = true;
     try {
@@ -311,6 +349,7 @@ class PwiAuth {
   /// Signs in a user using Google authentication.
   ///
   /// Throws an [Exception] if sign-in fails.
+  @override
   Future<void> signInWithGoogle() async {
     try {
       final provider = GoogleAuthProvider();
@@ -328,6 +367,7 @@ class PwiAuth {
   /// Creates a new user account with the given [email], [password], [firstName], and [lastName].
   ///
   /// Throws an [Exception] if sign-up fails.
+  @override
   Future<void> signUp(
       {required String email,
       required String password,
@@ -364,6 +404,7 @@ class PwiAuth {
   }
 
   /// Navigates the user to the sign-up page.
+  @override
   Future<void> goToSignUp() async {
     if (appUsesFirebaseAuth) return;
     final url = Uri.parse('https://$_endPoint/sign-up?redirect=${Uri.base}');
@@ -371,6 +412,7 @@ class PwiAuth {
   }
 
   /// Navigates the user to the sign-in page.
+  @override
   Future<void> goToSignIn() async {
     if (appUsesFirebaseAuth) return;
     final url = Uri.parse('https://$_endPoint/sign-in?redirect=${Uri.base}');
@@ -380,12 +422,13 @@ class PwiAuth {
   /// Sends a password reset email to the given [email].
   ///
   /// Throws an [Exception] if the email is invalid or sending fails.
+  @override
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
       log("Password reset email sent to $email");
     } catch (e) {
-      log("Error sending password reset email: "+e.toString());
+      log("Error sending password reset email: $e");
       final error = e.toString();
       if (error.contains("invalid-email")) {
         throw "Invalid email address";
@@ -397,6 +440,7 @@ class PwiAuth {
   }
 
   /// Disposes of resources used by this instance.
+  @override
   void dispose() {
     if (!appUsesFirebaseAuth) {
       _controller.close();
