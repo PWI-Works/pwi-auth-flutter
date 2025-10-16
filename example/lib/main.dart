@@ -43,9 +43,26 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PageScaffold(
       appBar: AppBar(title: Text(title)),
       body: LoadingPage(initialMessage: 'Loading...'),
     );
   }
 }
+
+final List<RouteDetails> navigationRoutes = [
+  RouteDetails(
+    name: RouteNames.sales,
+    title: 'Sales',
+    icon: Icons.attach_money,
+    route: '/sales',
+    contextBuilder: (context) => const SalesPage(),
+  ),
+  RouteDetails(
+    name: RouteNames.settings,
+    title: 'Settings',
+    icon: Icons.settings,
+    route: '/settings',
+    contextBuilder: (context) => SettingsPage(),
+  ),
+];
