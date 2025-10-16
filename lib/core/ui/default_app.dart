@@ -1,9 +1,7 @@
-// lib/app.dart
-
 import 'package:flutter/material.dart';
 import 'package:mvvm_plus/mvvm_plus.dart';
 import 'package:pwi_auth/core/router/app_router.dart';
-import 'package:pwi_auth/core/ui/app_view_model.dart';
+import 'package:pwi_auth/core/ui/default_app_view_model.dart';
 import 'package:pwi_auth/themes/blue_theme.dart';
 import 'package:pwi_auth/themes/green_theme.dart';
 import 'package:pwi_auth/themes/purple_theme.dart';
@@ -11,12 +9,12 @@ import 'package:pwi_auth/themes/red_theme.dart';
 import 'package:pwi_auth/themes/themes.dart';
 
 /// The main application widget that sets up the router and theme.
-class App extends ViewWidget<AppViewModel> {
+class DefaultApp extends ViewWidget<DefaultAppViewModel> {
   final Themes selectedTheme;
 
   /// Constructor for the App widget.
-  App({super.key, required this.selectedTheme})
-      : super(builder: () => AppViewModel());
+  DefaultApp({super.key, required this.selectedTheme})
+      : super(builder: () => DefaultAppViewModel());
 
   @override
   Widget build(BuildContext context) {

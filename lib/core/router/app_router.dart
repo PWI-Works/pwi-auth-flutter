@@ -1,9 +1,9 @@
 import 'package:pwi_auth/core/default_global_controller.dart';
+import 'package:pwi_auth/core/router/route_details.dart';
 import 'package:pwi_auth/core/ui/main_scaffold.dart';
 import 'package:pwi_auth/login_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pwi_auth/core/ui/fade_transition_page.dart';
-import 'package:pwi_auth/data/models/route_details.dart';
 
 //// Singleton class to manage router configuration
 class AppRouter {

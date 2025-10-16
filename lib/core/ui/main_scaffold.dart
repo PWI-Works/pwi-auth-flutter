@@ -33,13 +33,13 @@ class MainScaffold extends ViewWidget<MainScaffoldViewModel> {
             // Selected nav index and change handler live in the VM.
             selectedIndex: selectedIndex,
             onSelectedIndexChange: viewModel.onSelectedIndexChange,
-  
-              // Provide destinations with icons/titles from route definitions.
+
+            // Provide destinations with icons/titles from route definitions.
             destinations: AppRouter.instance.navigationRoutes
                 .map(
                   (route) => CustomNavigationDestination(
                     icon: Icon(route.icon),
-                    selectedIcon: Icon(route.selectedIcon ?? route.icon),
+                    selectedIcon: Icon(route.selectedIcon),
                     label: route.title,
                   ),
                 )

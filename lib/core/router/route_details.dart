@@ -11,6 +11,9 @@ class RouteDetails {
   /// The icon of the navigation button.
   final IconData icon;
 
+  /// The icon of the navigation button when selected.
+  final IconData selectedIcon;
+
   /// The route of the navigation button.
   final String route;
 
@@ -31,5 +34,6 @@ class RouteDetails {
     required this.route,
     required this.contextBuilder,
     this.childRoutes,
-  });
+    IconData? selectedIcon,
+  }) : selectedIcon = selectedIcon ?? icon;
 }
