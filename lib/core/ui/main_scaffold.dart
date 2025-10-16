@@ -16,8 +16,7 @@ class MainScaffold extends ViewWidget<MainScaffoldViewModel> {
     super.key,
     this.child,
     required this.selectedIndex,
-    required GlobalControllerInterface global
-  }) : super(builder: () => MainScaffoldViewModel(global: global));
+  }) : super(builder: () => MainScaffoldViewModel());
 
   @override
   Widget build(BuildContext context) {

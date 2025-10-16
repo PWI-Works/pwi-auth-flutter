@@ -5,13 +5,12 @@ import 'package:pwi_auth/core/router/app_router.dart';
 
 /// ViewModel for the main scaffold of the application.
 class MainScaffoldViewModel extends ViewModel {
-  final GlobalControllerInterface _global;
+  final GlobalControllerInterface _global = GlobalControllerInterface.instance;
 
   // Default tab to show if path doesn't match any known route
   static const int _defaultTab = 1; // Categories tab
 
-  MainScaffoldViewModel({required GlobalControllerInterface global})
-      : _global = global {
+  MainScaffoldViewModel() {
     _global.addListener(notifyListeners);
   }
 
