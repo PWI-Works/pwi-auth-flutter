@@ -1,9 +1,9 @@
-import 'package:pwi_auth/core/global_controller_interface.dart';
+import 'package:pwi_auth/core/default_global_controller.dart';
 import 'package:pwi_auth/core/ui/main_scaffold.dart';
 import 'package:pwi_auth/login_page.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pwi_auth/core/ui/fade_transition_page.dart';
-import 'package:pwi_auth/ui_and_navigation/route_details.dart';
+import 'package:pwi_auth/data/models/route_details.dart';
 
 //// Singleton class to manage router configuration
 class AppRouter {
@@ -20,13 +20,13 @@ class AppRouter {
   late final GoRouter router = _createRouter();
 
   // Holds the global controller instance
-  static GlobalControllerInterface? _global;
+  static DefaultGlobalController? _global;
 
   /// A list of routes that are displayed in the navigation bar and rail
   static List<RouteDetails>? _navigationRoutes;
 
   /// The global controller instance, used internally to force initialization
-  GlobalControllerInterface get global {
+  DefaultGlobalController get global {
     final g = _global;
     if (g == null) {
       throw StateError(
@@ -51,7 +51,7 @@ class AppRouter {
 
   /// Initialize the global controller. Should be called at app startup.
   static void initialize({
-    required GlobalControllerInterface globalController,
+    required DefaultGlobalController globalController,
     required List<RouteDetails> navigationRoutes,
   }) {
     _global = globalController;

@@ -9,8 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Signature for creating a customized global controller instance.
 ///
 /// This allows apps to inject a subclass while delegating the singleton
-/// lifecycle managed by [GlobalControllerInterface].
-typedef GlobalControllerBuilder = GlobalControllerInterface Function(
+/// lifecycle managed by [DefaultGlobalController].
+typedef GlobalControllerBuilder = DefaultGlobalController Function(
     String appTitle, PwiAuth? auth);
 
 /// Singleton that provides global application state that the UI listens to.
@@ -24,14 +24,14 @@ typedef GlobalControllerBuilder = GlobalControllerInterface Function(
 /// - Extend the controller and override [onReady], [onSignIn], or [onSignOut]
 ///   to customize behavior. Subclasses should call [protected] in their
 ///   constructor to ensure the shared initialization runs.
-class GlobalControllerInterface extends Model {
+class DefaultGlobalController extends Model {
   /// Obtains the singleton controller.
   ///
   /// Subsequent calls return the same instance, so the provided [appTitle] and
   /// [auth] must match or a [StateError] is thrown. When [builder] is supplied
   /// the created instance must call [protected] or otherwise ensure the core
   /// initialization executes.
-  factory GlobalControllerInterface({
+  factory DefaultGlobalController({
     required String appTitle,
     PwiAuth? auth,
     GlobalControllerBuilder? builder,
@@ -54,7 +54,7 @@ class GlobalControllerInterface extends Model {
     }
 
     final controller = builder?.call(appTitle, auth) ??
-        GlobalControllerInterface._internal(
+        DefaultGlobalController._internal(
           appTitle: appTitle,
           auth: auth,
         );
@@ -63,7 +63,7 @@ class GlobalControllerInterface extends Model {
   }
 
   /// Core constructor that performs shared initialization.
-  GlobalControllerInterface._internal({
+  DefaultGlobalController._internal({
     required String appTitle,
     PwiAuth? auth,
   }) : _appTitle = appTitle {
@@ -72,18 +72,18 @@ class GlobalControllerInterface extends Model {
 
   /// Constructor intended for subclasses so they can invoke shared setup.
   @protected
-  GlobalControllerInterface.protected({
+  DefaultGlobalController.protected({
     required String appTitle,
     PwiAuth? auth,
   }) : this._internal(appTitle: appTitle, auth: auth);
 
   /// Singleton instance storage.
-  static GlobalControllerInterface? _instance;
+  static DefaultGlobalController? _instance;
 
   /// Returns the active singleton instance.
   ///
   /// Throws a [StateError] if the controller has not been initialized yet.
-  static GlobalControllerInterface get instance {
+  static DefaultGlobalController get instance {
     final current = _instance;
     if (current == null) {
       throw StateError(
@@ -95,7 +95,7 @@ class GlobalControllerInterface extends Model {
   }
 
   /// Exposes the active instance when available, otherwise `null`.
-  static GlobalControllerInterface? get instanceOrNull => _instance;
+  static DefaultGlobalController? get instanceOrNull => _instance;
 
   /// Immutable application title exposed through [appTitle].
   final String _appTitle;

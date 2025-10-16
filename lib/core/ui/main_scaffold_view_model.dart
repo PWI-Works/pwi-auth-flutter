@@ -1,11 +1,11 @@
 import 'package:mvvm_plus/mvvm_plus.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pwi_auth/core/global_controller_interface.dart';
+import 'package:pwi_auth/core/default_global_controller.dart';
 import 'package:pwi_auth/core/router/app_router.dart';
 
 /// ViewModel for the main scaffold of the application.
 class MainScaffoldViewModel extends ViewModel {
-  final GlobalControllerInterface _global = GlobalControllerInterface.instance;
+  final DefaultGlobalController _global = DefaultGlobalController.instance;
 
   // Default tab to show if path doesn't match any known route
   static const int _defaultTab = 1; // Categories tab
