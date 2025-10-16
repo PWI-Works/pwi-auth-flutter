@@ -5,33 +5,33 @@ import 'package:pwi_auth/data/models/color_set.dart';
 class SemanticColors {
   /// ColorSets for each seniority color pairing
   static const ColorSet redSeniority = ColorSet(
-    foreground: _redSeniority,
-    background: _onRedSeniority,
+    background: _redSeniority,
+    foreground: _onRedSeniority,
   );
 
   static const ColorSet greenSeniority = ColorSet(
-    foreground: _greenSeniority,
-    background: _onGreenSeniority,
+    background: _greenSeniority,
+    foreground: _onGreenSeniority,
   );
 
   static const ColorSet blueSeniority = ColorSet(
-    foreground: _blueSeniority,
-    background: _onBlueSeniority,
+    background: _blueSeniority,
+    foreground: _onBlueSeniority,
   );
 
   static const ColorSet orangeSeniority = ColorSet(
-    foreground: _orangeSeniority,
-    background: onOrangeSeniority,
+    background: _orangeSeniority,
+    foreground: onOrangeSeniority,
   );
 
   static const ColorSet yellowSeniority = ColorSet(
-    foreground: _yellowSeniority,
-    background: _onYellowSeniority,
+    background: _yellowSeniority,
+    foreground: _onYellowSeniority,
   );
 
   static const ColorSet warning = ColorSet(
-    foreground: _warning,
-    background: _onWarning,
+    background: _warning,
+    foreground: _onWarning,
   );
 
   /// The color used for warnings.
