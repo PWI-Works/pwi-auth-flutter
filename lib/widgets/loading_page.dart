@@ -4,12 +4,10 @@ import 'package:pwi_auth/widgets/loading_page_view_model.dart';
 
 /// A loading page that cycles through different loading messages with fade transitions
 class LoadingPage extends ViewWidget<LoadingPageViewModel> {
-  /// Initial message to display (optional)
-  final String text;
 
   /// Creates a loading view with cycling messages
-  LoadingPage({super.key, required this.text})
-      : super(builder: () => LoadingPageViewModel(text));
+  LoadingPage({super.key, String? initialMessage})
+      : super(builder: () => LoadingPageViewModel(initialMessage));
 
   @override
   Widget build(BuildContext context) {
