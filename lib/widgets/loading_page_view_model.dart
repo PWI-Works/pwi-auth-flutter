@@ -5,7 +5,7 @@ import 'package:mvvm_plus/mvvm_plus.dart';
 /// ViewModel that manages cycling loading messages with timed transitions
 class LoadingPageViewModel extends ViewModel {
   /// the duration for displaying each loading message
-  static const int _messageDisplayDuration = 2500; // milliseconds
+  static const int _messageDisplayDuration = 2800; // milliseconds
   /// the duration for the transition between loading messages
   static const int _messageTransitionDuration = 500; // milliseconds
 
@@ -21,19 +21,20 @@ class LoadingPageViewModel extends ViewModel {
   /// These messages are shuffled each time the loading view is shown
   /// to provide variety and keep the user engaged
   static const List<String> _standardMessages = [
-    "🚀 Calculating jump to hyperspace...",
-    "🔮 Consulting the Oracle...",
-    "🪄 Expecto Data-trum!",
-    "🖖 Beaming up, Scotty...",
-    "⚙️ Assembling the Avengers...",
-    "🦖 Hold onto your butts...",
+    "Calculating jump to hyperspace...",
+    "Consulting the Oracle...",
+    "Expecto Data-trum!",
+    "Beaming up, Scotty...",
+    "Assembling the Avengers...",
+    "Hold onto your butts...",
   ];
 
   /// Messages that display after a longer load time
   /// These messages are shown in sequence after the standard messages
   static const List<String> _longLoadMessages = [
-    "🐢 Running at 0.5x speed for dramatic effect...",
-    "🕵️ Investigating where the last 1% went...",
+    "Running at 0.5x speed for dramatic effect...",
+    "Investigating where the last 1% went...",
+    "I'm getting tired...",
   ];
 
   // Messages that display after the randomized sequence
