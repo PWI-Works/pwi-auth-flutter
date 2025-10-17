@@ -10,6 +10,8 @@ import 'package:pwi_auth/core/router/default_routes.dart';
 import 'package:pwi_auth/widgets/page_scaffold.dart';
 import 'mock_pwi_auth.dart';
 
+// todo fix the background color for the navigation bar
+
 void main() {
   // Initialize the global controller before running the app
   DefaultGlobalController(appTitle: 'Flutter Demo', auth: MockPwiAuth());
