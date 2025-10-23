@@ -9,31 +9,94 @@ import 'package:shared_preferences/shared_preferences.dart';
 ///
 /// This allows apps to inject a subclass while delegating the singleton
 /// lifecycle managed by [DefaultGlobalController].
-typedef GlobalControllerBuilder = DefaultGlobalController Function(
-    String appTitle, PwiAuthBase? auth);
+typedef GlobalControllerBuilder = DefaultGlobalController Function({
+  required String appTitle,
+  PwiAuthBase? auth,
+});
+
+/// Typed builder for subclasses so callers can retain their specific type.
+typedef TypedGlobalControllerBuilder<T extends DefaultGlobalController>
+    = T Function({
+  required String appTitle,
+  PwiAuthBase? auth,
+});
 
 /// Singleton that provides global application state that the UI listens to.
 ///
 /// Highlights:
-/// - Use the factory constructor to obtain the singleton. The first call must
-///   supply the application title and can optionally provide a [PwiAuthBase]
-///   instance. Repeated calls return the same instance and validate arguments.
-/// - Use [GlobalControllerBuilder] if you need a subclass while keeping the
-///   existing singleton behavior and shared initialization.
+/// - Call [initialize] once at startup to configure the singleton. Subsequent
+///   calls must supply the same [appTitle] and [auth] instance or a
+///   [StateError] is thrown.
+/// - Use [initializeSubclass] if you need a subclass while keeping the existing
+///   singleton behavior and shared initialization.
 /// - Extend the controller and override [onReady], [onSignIn], or [onSignOut]
-///   to customize behavior. Subclasses should call [protected] in their
-///   constructor to ensure the shared initialization runs.
+///   to customize behavior. Subclasses should invoke [protected] in their
+///   constructor so the shared initialization runs when the singleton is set up.
 class DefaultGlobalController extends Model {
-  /// Obtains the singleton controller.
+  DefaultGlobalController._create();
+
+  /// Constructor intended for subclasses so they can invoke shared setup.
+  @protected
+  DefaultGlobalController.protected() : this._create();
+
+  /// Singleton instance storage.
+  static DefaultGlobalController? _instance;
+
+  /// Returns the active singleton instance.
   ///
-  /// Subsequent calls return the same instance, so the provided [appTitle] and
-  /// [auth] must match or a [StateError] is thrown. When [builder] is supplied
-  /// the created instance must call [protected] or otherwise ensure the core
-  /// initialization executes.
-  factory DefaultGlobalController({
+  /// Throws a [StateError] if the controller has not been initialized yet.
+  static DefaultGlobalController get instance {
+    final current = _instance;
+    if (current == null) {
+      throw StateError(
+        'GlobalControllerInterface has not been initialized. Call initialize '
+        'before accessing the instance.',
+      );
+    }
+    return current;
+  }
+
+  /// Exposes the active instance when available, otherwise `null`.
+  static DefaultGlobalController? get instanceOrNull => _instance;
+
+  bool _isConfigured = false;
+
+  void _setup({required String appTitle, PwiAuthBase? auth}) {
+    if (_isConfigured) {
+      throw StateError('GlobalControllerInterface is already configured.');
+    }
+    _appTitle = appTitle;
+    _isConfigured = true;
+    _initializeCore(auth: auth);
+  }
+
+  /// Initializes the singleton controller with an optional custom subclass.
+  ///
+  /// Subsequent calls perform validation and return the existing instance.
+  static DefaultGlobalController initialize({
     required String appTitle,
     PwiAuthBase? auth,
     GlobalControllerBuilder? builder,
+  }) =>
+      initializeSubclass<DefaultGlobalController>(
+        appTitle: appTitle,
+        auth: auth,
+        builder: builder ??
+            ({required String appTitle, PwiAuthBase? auth}) =>
+                DefaultGlobalController._create(),
+      );
+
+  /// Initializes the singleton with a custom subclass while keeping type safety.
+  ///
+  /// The provided [builder] must call [protected] within its constructor so
+  /// shared setup executes. Most subclasses expose their own static
+  /// `initialize` that forwards here so app code can remain unaware of the
+  /// builder. This method throws if the singleton is already initialized with a
+  /// different subclass.
+  static T initializeSubclass<T extends DefaultGlobalController>({
+    required String appTitle,
+    PwiAuthBase? auth,
+    required TypedGlobalControllerBuilder<T> builder,
   }) {
     final existing = _instance;
     if (existing != null) {
@@ -49,55 +112,40 @@ class DefaultGlobalController extends Model {
           'instance. Dispose the current instance before supplying a new one.',
         );
       }
+      if (existing is! T) {
+        throw StateError(
+          'GlobalControllerInterface already initialized with '
+          '${existing.runtimeType}.',
+        );
+      }
       return existing;
     }
 
-    final controller = builder?.call(appTitle, auth) ??
-        DefaultGlobalController._internal(
-          appTitle: appTitle,
-          auth: auth,
-        );
+    final controller = builder(
+      appTitle: appTitle,
+      auth: auth,
+    );
+    controller._setup(appTitle: appTitle, auth: auth);
     _instance = controller;
     return controller;
   }
 
-  /// Core constructor that performs shared initialization.
-  DefaultGlobalController._internal({
-    required String appTitle,
-    PwiAuthBase? auth,
-  }) : _appTitle = appTitle {
-    _initializeCore(auth: auth);
-  }
-
-  /// Constructor intended for subclasses so they can invoke shared setup.
-  @protected
-  DefaultGlobalController.protected({
-    required String appTitle,
-    PwiAuthBase? auth,
-  }) : this._internal(appTitle: appTitle, auth: auth);
-
-  /// Singleton instance storage.
-  static DefaultGlobalController? _instance;
-
-  /// Returns the active singleton instance.
+  /// Returns the active singleton instance cast to [T].
   ///
-  /// Throws a [StateError] if the controller has not been initialized yet.
-  static DefaultGlobalController get instance {
-    final current = _instance;
-    if (current == null) {
+  /// Throws when the singleton is uninitialized or does not match [T].
+  static T instanceAs<T extends DefaultGlobalController>() {
+    final controller = instance;
+    if (controller is! T) {
       throw StateError(
-        'GlobalControllerInterface has not been initialized. Call the factory '
-        'constructor before accessing the instance.',
+        'GlobalControllerInterface is of type ${controller.runtimeType}, '
+        'requested $T.',
       );
     }
-    return current;
+    return controller;
   }
 
-  /// Exposes the active instance when available, otherwise `null`.
-  static DefaultGlobalController? get instanceOrNull => _instance;
-
   /// Immutable application title exposed through [appTitle].
-  final String _appTitle;
+  late final String _appTitle;
 
   /// Firebase authentication wrapper the controller listens to.
   PwiAuthBase? _auth;
@@ -106,7 +154,7 @@ class DefaultGlobalController extends Model {
   PwiAuthBase get auth {
     if (_auth == null) {
       throw StateError(
-          'GlobalControllerInterface has not been initialized. Call the factory constructor before accessing it.');
+          'GlobalControllerInterface has not been initialized. Call initialize before accessing it.');
     }
     return _auth!;
   }
@@ -116,12 +164,12 @@ class DefaultGlobalController extends Model {
 
   /// Whether the user is currently signed in
   ///
-  /// Throws a [StateError] until the controller has been initialized via the
-  /// factory constructor.
+  /// Throws a [StateError] until the controller has been initialized via
+  /// [initialize] or [initializeSubclass].
   bool get isSignedIn {
     if (_auth == null) {
       throw StateError(
-          'GlobalControllerInterface has not been initialized. Call the factory constructor before accessing it.');
+          'GlobalControllerInterface has not been initialized. Call initialize before accessing it.');
     }
     return _auth!.signedIn;
   }
@@ -194,6 +242,8 @@ class DefaultGlobalController extends Model {
   void dispose() {
     _authSubscription?.cancel();
     themeMode.removeListener(_saveTheme);
+    _auth = null;
+    _isConfigured = false;
     if (identical(_instance, this)) {
       _instance = null;
     }

@@ -103,8 +103,10 @@ class AppRouter {
           pageBuilder: (context, state) => FadeTransitionPage<dynamic>(
             key: state.pageKey,
             child: LoginPage(
-                appTitle: global.appTitle,
-                onAuthenticated: (context) => context.go(defaultRoute)),
+              appTitle: global.appTitle,
+              onAuthenticated: (context) => context.go(defaultRoute),
+              auth: _global!.auth,
+            ),
           ),
         )
       ],

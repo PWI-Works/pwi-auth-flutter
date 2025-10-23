@@ -3,24 +3,24 @@ library pwi_auth;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
-import 'package:pwi_auth/core/default_global_controller.dart';
 import 'package:pwi_auth/pwi_auth.dart';
 
 class LoginPage extends StatelessWidget {
-  final PwiAuthBase _auth;
+  final PwiAuthBase auth;
 
   final String appTitle;
   final void Function(BuildContext context) onAuthenticated;
 
-  LoginPage({
+  const LoginPage({
     super.key,
     required this.appTitle,
     required this.onAuthenticated,
-  }) : _auth = DefaultGlobalController.instance.auth;
+    required this.auth,
+  });
 
   Future<String?> _signInWithCredentials(LoginData data) async {
     try {
-      await _auth.signIn(email: data.name, password: data.password);
+      await auth.signIn(email: data.name, password: data.password);
       return null;
     } catch (e) {
       return e.toString();
@@ -33,7 +33,7 @@ class LoginPage extends StatelessWidget {
     }
 
     try {
-      await _auth.signUp(
+      await auth.signUp(
           email: data.name!,
           password: data.password!,
           firstName: data.additionalSignupData?["firstName"] ?? "Unknown",
@@ -46,7 +46,7 @@ class LoginPage extends StatelessWidget {
 
   Future<String?> _signInWithGoogle() async {
     try {
-      await _auth.signInWithGoogle();
+      await auth.signInWithGoogle();
       return null;
     } catch (e) {
       return e.toString();
@@ -55,7 +55,7 @@ class LoginPage extends StatelessWidget {
 
   Future<String?> _recoverPassword(String email) async {
     try {
-      await _auth.sendPasswordResetEmail(email);
+      await auth.sendPasswordResetEmail(email);
       return null;
     } catch (e) {
       return e.toString();
