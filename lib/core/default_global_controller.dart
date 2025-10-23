@@ -15,8 +15,8 @@ typedef GlobalControllerBuilder = DefaultGlobalController Function({
 });
 
 /// Typed builder for subclasses so callers can retain their specific type.
-typedef TypedGlobalControllerBuilder<T extends DefaultGlobalController>
-    = T Function({
+typedef TypedGlobalControllerBuilder<T extends DefaultGlobalController> = T
+    Function({
   required String appTitle,
   PwiAuthBase? auth,
 });

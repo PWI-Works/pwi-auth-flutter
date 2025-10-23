@@ -13,13 +13,12 @@ class MyOwnController extends DefaultGlobalController {
   static MyOwnController initialize({
     required String appTitle,
     PwiAuthBase? auth,
-  }) =>
-      DefaultGlobalController.initializeSubclass<MyOwnController>(
-        appTitle: appTitle,
-        auth: auth,
-        builder: ({required String appTitle, PwiAuthBase? auth}) =>
-            MyOwnController._(),
-      );
+  }) => DefaultGlobalController.initializeSubclass<MyOwnController>(
+    appTitle: appTitle,
+    auth: auth,
+    builder: ({required String appTitle, PwiAuthBase? auth}) =>
+        MyOwnController._(),
+  );
 
   /// Convenient typed accessor for the singleton instance.
   static MyOwnController get instance =>
@@ -30,5 +29,11 @@ class MyOwnController extends DefaultGlobalController {
   @override
   Future<void> onSignIn(User user) async {
     email.value = user.email;
+  }
+
+  @override
+  Future<void> onSignOut() async {
+    print('MyOwnController signing out');
+    email.value = null;
   }
 }

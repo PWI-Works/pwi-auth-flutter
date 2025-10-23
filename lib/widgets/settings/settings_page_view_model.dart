@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:mvvm_plus/mvvm_plus.dart';
 import 'package:pwi_auth/core/default_global_controller.dart';
-import 'package:pwi_auth/pwi_auth.dart';
 import 'package:rounded_loading_button_plus/rounded_loading_button.dart';
 
 class SettingsPageViewModel extends ViewModel {
@@ -33,7 +32,7 @@ class SettingsPageViewModel extends ViewModel {
   Future<void> signOut() async {
     signOutButtonController.start();
     try {
-      await PwiAuth().signOut();
+      await global.auth.signOut();
       signOutButtonController.success();
     } catch (e) {
       signOutButtonController.error();

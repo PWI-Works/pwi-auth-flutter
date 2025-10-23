@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:pwi_auth/pwi_auth.dart';
 
 /// Lightweight mock implementation of [PwiAuthBase] for local testing examples.
@@ -9,10 +10,9 @@ class MockPwiAuth extends PwiAuthBase {
     bool signedIn = true,
     User? initialUser,
     User? Function()? mockUserFactory,
-  })  : _userFactory = mockUserFactory,
-        _signedIn = signedIn,
-        _user = signedIn ? (initialUser ?? mockUserFactory?.call()) : null;
-
+  }) : _userFactory = mockUserFactory,
+       _signedIn = signedIn,
+       _user = signedIn ? (initialUser ?? mockUserFactory?.call()) : null;
 
   final User? Function()? _userFactory;
 
@@ -21,7 +21,6 @@ class MockPwiAuth extends PwiAuthBase {
 
   final _authStateController = StreamController<User?>.broadcast();
   final _errorsController = StreamController<String?>.broadcast();
-
 
   @override
   User? get user => _user;
@@ -40,13 +39,18 @@ class MockPwiAuth extends PwiAuthBase {
 
   /// Updates the mock authentication state and notifies listeners.
   void setSignedIn({required bool value, User? user}) {
-    _signedIn = value;
-    if (value) {
-      _user = user ?? _user ?? _userFactory?.call();
-    } else {
-      _user = null;
+    try {
+      _signedIn = value;
+      if (value) {
+        _user = user ?? _user ?? _userFactory?.call();
+      } else {
+        _user = null;
+      }
+      _authStateController.add(_user);
+    } catch (e) {
+      emitError(e.toString());
+      debugPrint('Error in setSignedIn: $e');
     }
-    _authStateController.add(_user);
   }
 
   /// Emits an error message to any listeners observing [errors].
@@ -59,8 +63,10 @@ class MockPwiAuth extends PwiAuthBase {
   Future<void> signOut() async => setSignedIn(value: false);
 
   @override
-  Future<void> signIn({required String email, required String password}) async =>
-      setSignedIn(value: true);
+  Future<void> signIn({
+    required String email,
+    required String password,
+  }) async => setSignedIn(value: true);
 
   @override
   Future<void> signInWithGoogle() async => setSignedIn(value: true);
@@ -71,8 +77,7 @@ class MockPwiAuth extends PwiAuthBase {
     required String password,
     required String firstName,
     required String lastName,
-  }) async =>
-      setSignedIn(value: true);
+  }) async => setSignedIn(value: true);
 
   @override
   Future<void> goToSignUp() async {}
