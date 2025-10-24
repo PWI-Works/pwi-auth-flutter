@@ -55,7 +55,8 @@ class FlexibleGridLayout extends StatelessWidget {
     return optimalUnits;
   }
 
-  List<GridItem> _adjustItemGridUnits(List<GridItem> items, int effectiveGridUnits) {
+  List<GridItem> _adjustItemGridUnits(
+      List<GridItem> items, int effectiveGridUnits) {
     return items.map((item) {
       // If the item's grid units exceed the effective grid units,
       // create a new GridItem with adjusted grid units
@@ -110,7 +111,9 @@ class FlexibleGridLayout extends StatelessWidget {
           rowGap: itemGaps,
           children: [
             for (var rowIndex = 0; rowIndex < rows.length; rowIndex++)
-              for (var itemIndex = 0; itemIndex < rows[rowIndex].length; itemIndex++)
+              for (var itemIndex = 0;
+                  itemIndex < rows[rowIndex].length;
+                  itemIndex++)
                 Padding(
                   padding: EdgeInsets.all(itemGaps),
                   child: rows[rowIndex][itemIndex].build(context),

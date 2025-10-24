@@ -3,7 +3,6 @@ import 'package:pwi_auth/core/router/route_details.dart';
 import 'package:pwi_auth/widgets/settings/settings_page.dart';
 
 class DefaultRoutes {
-  
   // name of the settings route
   static String get settingsRouteName => settings.name;
 

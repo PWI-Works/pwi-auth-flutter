@@ -1,4 +1,3 @@
-
 enum Themes {
   purple,
   blue,

@@ -69,7 +69,8 @@ class LoginPage extends StatelessWidget {
 
     return FlutterLogin(
       title: appTitle,
-      logo: const AssetImage('packages/pwi_auth/assets/images/pwi-shield-white-space.png'),
+      logo: const AssetImage(
+          'packages/pwi_auth/assets/images/pwi-shield-white-space.png'),
       onLogin: _signInWithCredentials,
       onSignup: _signUp,
       additionalSignupFields: const [

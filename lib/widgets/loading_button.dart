@@ -76,7 +76,8 @@ class _LoadingButtonState extends State<LoadingButton> {
 
   /// Measures the width of the child widget.
   void _measureChild() {
-    final RenderBox? renderBox = _childKey.currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? renderBox =
+        _childKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox != null) {
       setState(() {
         _childWidth = renderBox.size.width;

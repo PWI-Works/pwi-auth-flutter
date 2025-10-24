@@ -3,6 +3,7 @@ library pwi_auth;
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 /// The [GreenTheme] defines light and dark themes for the app with green as the primary color.
 ///
 /// Theme setup for FlexColorScheme package v8.

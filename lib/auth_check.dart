@@ -101,7 +101,8 @@ class AuthCheck extends ViewWidget<AuthCheckViewModel> {
               builder: (context) => LoginPage(
                 appTitle: viewModel.appTitle,
                 onAuthenticated: (context) => Navigator.of(context)
-                    .pushNamedAndRemoveUntil(viewModel.authenticatedRoute, (route) => false),
+                    .pushNamedAndRemoveUntil(
+                        viewModel.authenticatedRoute, (route) => false),
               ),
             ),
             (route) => false);

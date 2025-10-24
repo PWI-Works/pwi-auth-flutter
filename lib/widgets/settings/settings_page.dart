@@ -6,10 +6,10 @@ import 'package:pwi_auth/widgets/loading_button.dart';
 import 'settings_page_view_model.dart';
 
 class SettingsPage extends ViewWidget<SettingsPageViewModel> {
-
   final List<Widget> additionalWidgets;
 
-  SettingsPage({super.key, this.additionalWidgets = const []}) : super(builder: () => SettingsPageViewModel());
+  SettingsPage({super.key, this.additionalWidgets = const []})
+      : super(builder: () => SettingsPageViewModel());
 
   @override
   Widget build(BuildContext context) {
