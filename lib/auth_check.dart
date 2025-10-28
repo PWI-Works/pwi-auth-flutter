@@ -9,14 +9,16 @@ import 'package:pwi_auth/utils.dart';
 import 'auth_check_view_model.dart';
 import 'login_page.dart';
 
+@Deprecated(
+    'This class is deprecated. Please use the AppRouter class instead, which has built-in auth checking.')
 class AuthCheck extends ViewWidget<AuthCheckViewModel> {
-  AuthCheck(
-      {super.key,
-      required String authenticatedRoute,
-      required String appTitle,
-      bool loggingEnabled = false,
-      PwiAuthBase? auth})
-      : super(
+  AuthCheck({
+    super.key,
+    required String authenticatedRoute,
+    required String appTitle,
+    bool loggingEnabled = false,
+    PwiAuthBase? auth,
+  }) : super(
             builder: () => AuthCheckViewModel(
                 authenticatedRoute: authenticatedRoute,
                 appTitle: appTitle,
