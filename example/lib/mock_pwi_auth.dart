@@ -10,11 +10,28 @@ class MockPwiAuth extends PwiAuthBase {
     bool signedIn = true,
     User? initialUser,
     User? Function()? mockUserFactory,
-  }) : _userFactory = mockUserFactory,
+  }) : _userFactory = (() =>
+           _resolveUser(initialUser: null, mockUserFactory: mockUserFactory)),
        _signedIn = signedIn,
-       _user = signedIn ? (initialUser ?? mockUserFactory?.call()) : null;
+       _user = signedIn
+           ? _resolveUser(
+               initialUser: initialUser,
+               mockUserFactory: mockUserFactory,
+             )
+           : null;
 
-  final User? Function()? _userFactory;
+  static User _resolveUser({
+    required User? initialUser,
+    required User? Function()? mockUserFactory,
+  }) {
+    if (initialUser != null) {
+      return initialUser;
+    }
+    final provided = mockUserFactory?.call();
+    return provided ?? _MockFirebaseUser.generate();
+  }
+
+  final User Function() _userFactory;
 
   User? _user;
   bool _signedIn;
@@ -38,11 +55,15 @@ class MockPwiAuth extends PwiAuthBase {
   bool get authStatusChecked => true;
 
   /// Updates the mock authentication state and notifies listeners.
+  ///
+  /// When switching to a signed-in state without a provided [user], this method
+  /// generates a lightweight mock [User] instance so downstream listeners never
+  /// observe a `null` user while `signedIn` is `true`.
   void setSignedIn({required bool value, User? user}) {
     try {
       _signedIn = value;
       if (value) {
-        _user = user ?? _user ?? _userFactory?.call();
+        _user = user ?? _user ?? _userFactory();
       } else {
         _user = null;
       }
@@ -93,4 +114,206 @@ class MockPwiAuth extends PwiAuthBase {
     _authStateController.close();
     _errorsController.close();
   }
+}
+
+class _MockFirebaseUser implements User {
+  _MockFirebaseUser({
+    required this.uid,
+    String? email,
+    String? displayName,
+    bool emailVerified = false,
+    bool isAnonymous = false,
+    String? phoneNumber,
+    String? photoURL,
+  }) : _email = email,
+       _displayName = displayName,
+       _emailVerified = emailVerified,
+       _isAnonymous = isAnonymous,
+       _phoneNumber = phoneNumber,
+       _photoURL = photoURL,
+       _metadata = UserMetadata(
+         DateTime.now().millisecondsSinceEpoch,
+         DateTime.now().millisecondsSinceEpoch,
+       );
+
+  factory _MockFirebaseUser.generate() {
+    final seed = DateTime.now().millisecondsSinceEpoch;
+    return _MockFirebaseUser(
+      uid: 'mock-user-$seed',
+      email: 'mock$seed@example.com',
+      displayName: 'Mock User $seed',
+    );
+  }
+
+  @override
+  final String uid;
+  String? _email;
+  String? _displayName;
+  bool _emailVerified;
+  final bool _isAnonymous;
+  final String? _phoneNumber;
+  String? _photoURL;
+  final UserMetadata _metadata;
+
+  @override
+  String? get email => _email;
+
+  @override
+  String? get displayName => _displayName;
+
+  @override
+  bool get emailVerified => _emailVerified;
+
+  @override
+  bool get isAnonymous => _isAnonymous;
+
+  @override
+  UserMetadata get metadata => _metadata;
+
+  @override
+  String? get phoneNumber => _phoneNumber;
+
+  @override
+  String? get photoURL => _photoURL;
+
+  @override
+  List<UserInfo> get providerData => const [];
+
+  @override
+  String? get refreshToken => null;
+
+  @override
+  String? get tenantId => null;
+
+  @override
+  MultiFactor get multiFactor =>
+      throw UnimplementedError('MultiFactor is not supported in MockPwiAuth.');
+
+  @override
+  Future<void> delete() async {}
+
+  @override
+  Future<String?> getIdToken([bool forceRefresh = false]) async => 'mock-token';
+
+  @override
+  Future<IdTokenResult> getIdTokenResult([bool forceRefresh = false]) =>
+      Future.error(
+        UnimplementedError('IdTokenResult is not supported in MockPwiAuth.'),
+      );
+
+  @override
+  Future<UserCredential> linkWithCredential(AuthCredential credential) =>
+      Future.error(
+        UnimplementedError('linkWithCredential not supported in MockPwiAuth.'),
+      );
+
+  @override
+  Future<UserCredential> linkWithProvider(AuthProvider provider) =>
+      Future.error(
+        UnimplementedError('linkWithProvider not supported in MockPwiAuth.'),
+      );
+
+  @override
+  Future<UserCredential> linkWithPopup(AuthProvider provider) => Future.error(
+    UnimplementedError('linkWithPopup not supported in MockPwiAuth.'),
+  );
+
+  @override
+  Future<void> linkWithRedirect(AuthProvider provider) => Future.error(
+    UnimplementedError('linkWithRedirect not supported in MockPwiAuth.'),
+  );
+
+  @override
+  Future<ConfirmationResult> linkWithPhoneNumber(
+    String phoneNumber, [
+    RecaptchaVerifier? verifier,
+  ]) => Future.error(
+    UnimplementedError('linkWithPhoneNumber not supported in MockPwiAuth.'),
+  );
+
+  @override
+  Future<UserCredential> reauthenticateWithCredential(
+    AuthCredential credential,
+  ) => Future.error(
+    UnimplementedError(
+      'reauthenticateWithCredential not supported in MockPwiAuth.',
+    ),
+  );
+
+  @override
+  Future<UserCredential> reauthenticateWithProvider(AuthProvider provider) =>
+      Future.error(
+        UnimplementedError(
+          'reauthenticateWithProvider not supported in MockPwiAuth.',
+        ),
+      );
+
+  @override
+  Future<UserCredential> reauthenticateWithPopup(AuthProvider provider) =>
+      Future.error(
+        UnimplementedError(
+          'reauthenticateWithPopup not supported in MockPwiAuth.',
+        ),
+      );
+
+  @override
+  Future<void> reauthenticateWithRedirect(AuthProvider provider) =>
+      Future.error(
+        UnimplementedError(
+          'reauthenticateWithRedirect not supported in MockPwiAuth.',
+        ),
+      );
+
+  @override
+  Future<void> reload() async {}
+
+  @override
+  Future<void> sendEmailVerification([
+    ActionCodeSettings? actionCodeSettings,
+  ]) async {}
+
+  @override
+  Future<User> unlink(String providerId) async => this;
+
+  @override
+  Future<void> updateDisplayName(String? displayName) async {
+    _displayName = displayName;
+  }
+
+  @override
+  Future<void> updateEmail(String newEmail) async {
+    _email = newEmail;
+  }
+
+  @override
+  Future<void> updatePassword(String newPassword) async {}
+
+  @override
+  Future<void> updatePhoneNumber(PhoneAuthCredential phoneCredential) =>
+      Future.error(
+        UnimplementedError('updatePhoneNumber not supported in MockPwiAuth.'),
+      );
+
+  @override
+  Future<void> updatePhotoURL(String? photoURL) async {
+    _photoURL = photoURL;
+  }
+
+  @override
+  Future<void> updateProfile({String? displayName, String? photoURL}) async {
+    _displayName = displayName ?? _displayName;
+    _photoURL = photoURL ?? _photoURL;
+  }
+
+  @override
+  Future<void> verifyBeforeUpdateEmail(
+    String newEmail, [
+    ActionCodeSettings? actionCodeSettings,
+  ]) async {
+    _email = newEmail;
+    _emailVerified = true;
+  }
+
+  @override
+  String toString() => '_MockFirebaseUser(uid: $uid, email: $_email)';
 }
