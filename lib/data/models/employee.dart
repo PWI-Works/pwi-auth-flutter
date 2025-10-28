@@ -6,6 +6,10 @@ import 'package:pwi_auth/data/models/color_set.dart';
 import 'package:pwi_auth/semantic_colors.dart';
 
 /// Represents an employee with various attributes.
+///
+/// See `default_employee_extensions.dart` for convenience role helpers built on
+/// top of this model. Additional getter properties and methods should be added
+/// via extensions instead of modifying or extending this core model.
 class Employee {
   /// Unique identifier for the employee
   final String id;
@@ -152,22 +156,6 @@ class Employee {
         preferredName.split(' '); // Split preferred name into words
     return '${names.first[0]}${names.last[0]}'; // Concatenate first letters of first and last words
   }
-
-  /// Checks if the employee is a supervisor based on the seniority string.
-  /// Determines if the employee holds a supervisory position by analyzing seniority indicators.
-  bool get isSupervisor =>
-      !seniorityString.toLowerCase().contains('orange') &&
-      !seniorityString.toLowerCase().contains('yellow') &&
-      seniorityString.isNotEmpty;
-
-  /// Checks if the employee holds an executive position.
-  /// This getter determines if the employee is an executive by checking if the seniorityString contains the word 'red'.
-  bool get isExecutive =>
-      seniorityString.toLowerCase().contains('red') ||
-      jobTitle.toLowerCase().contains('chief');
-
-  /// Checks if the employee is a developer based on the job title.
-  bool get isDeveloper => department.toLowerCase().contains("software");
 
   /// Returns the color associated with the employee's seniority level.
   /// This method checks the seniorityString to determine the appropriate color. If the seniorityString contains specific keywords, it returns the corresponding color. If no keywords match, it returns grey.
