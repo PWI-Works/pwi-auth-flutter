@@ -145,7 +145,7 @@ class DefaultGlobalController extends Model {
         builder: builder ??
             ({required String appTitle, PwiAuthBase? auth}) =>
                 DefaultGlobalController._create(),
-        userType: userType,
+        userInitializationType: userType,
         employeeService: employeeService,
         userService: userService,
       );
@@ -162,14 +162,15 @@ class DefaultGlobalController extends Model {
     required String appTitle,
     PwiAuthBase? auth,
     required TypedGlobalControllerBuilder<T> builder,
-    UserInitializationType userType = UserInitializationType.firestoreEmployee,
+    UserInitializationType userInitializationType =
+        UserInitializationType.firestoreEmployee,
     EmployeeServiceInterface? employeeService,
     UserServiceInterface? userService,
   }) {
     // Validate arguments early so callers receive fast feedback before any
     // stateful work happens.
     _validateUserInitialization(
-      userType: userType,
+      userType: userInitializationType,
       employeeService: employeeService,
       userService: userService,
     );
@@ -197,7 +198,7 @@ class DefaultGlobalController extends Model {
         );
       }
       existing._configureUserInitialization(
-        userType: userType,
+        userType: userInitializationType,
         employeeService: employeeService,
         userService: userService,
       );
@@ -213,7 +214,7 @@ class DefaultGlobalController extends Model {
     // Configure dependencies before running the rest of the setup so any
     // thrown assertions stop initialization early.
     controller._configureUserInitialization(
-      userType: userType,
+      userType: userInitializationType,
       employeeService: employeeService,
       userService: userService,
     );
