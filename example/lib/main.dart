@@ -1,51 +1,146 @@
 import 'package:flutter/material.dart';
+import 'package:pwi_auth/core/router/app_router.dart';
+import 'package:pwi_auth/core/router/route_details.dart';
+import 'package:pwi_auth/widgets/error_screen.dart';
+import 'package:pwi_auth/widgets/info_card.dart';
 import 'package:pwi_auth/widgets/loading_page.dart';
+import 'package:pwi_auth/core/ui/default_app.dart';
+import 'package:pwi_auth/themes/themes.dart';
+import 'package:pwi_auth/core/router/default_routes.dart';
+import 'package:pwi_auth/widgets/page_scaffold.dart';
+import 'my_own_controller.dart';
+import 'mock_pwi_auth.dart';
+
+// todo fix the background color for the navigation bar
 
 void main() {
-  runApp(const MyApp());
+  // Initialize the global controller before running the app
+  MyOwnController.initialize(
+    appTitle: 'Flutter Demo',
+    auth: MockPwiAuth(signedIn: false),
+  );
+
+  AppRouter.initialize(
+    globalController: MyOwnController.instance,
+    navigationRoutes: [
+      RouteDetails(
+        name: "loading",
+        title: 'Loading',
+        icon: Icons.hourglass_empty,
+        route: '/loading',
+        contextBuilder: (context) => const LoadingPageScreen(),
+      ),
+      RouteDetails(
+        name: "error",
+        title: 'Error',
+        icon: Icons.error_outline,
+        route: '/error',
+        contextBuilder: (context) => const ErrorPageScreen(),
+      ),
+      RouteDetails(
+        name: "info",
+        title: 'Info Widgets',
+        icon: Icons.info_outline,
+        route: '/info',
+        contextBuilder: (context) => const InfoWidgets(),
+      ),
+      DefaultRoutes.settings,
+    ],
+  );
+
+  runApp(DefaultApp(selectedTheme: Themes.purple));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class LoadingPageScreen extends StatelessWidget {
+  const LoadingPageScreen({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    return PageScaffold(
+      title: "Loading Widget Demo",
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: 24.0,
+              horizontal: 24.0,
+            ),
+            child: Text(
+              'The Loading Page shows an optional initial message and then cycles through a series of '
+              'predefined messages. This gives users better confidence that something is actually '
+              'happening, and keeps the wait interesting.\n\n'
+              'If during debugging you start to see the messages repeating, it could indicate that there '
+              'is an error behind the scenes that needs to be addressed.',
+              style: Theme.of(context).textTheme.titleMedium,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(child: LoadingPage(initialMessage: 'Loading...')),
+        ],
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+class ErrorPageScreen extends StatelessWidget {
+  const ErrorPageScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: LoadingPage(initialMessage: 'Loading...'),
+    return PageScaffold(
+      title: "Error Widget Demo",
+      body: ErrorScreen(
+        message:
+            "This is an error screen. It uses animations to draw attention.",
+      ),
+    );
+  }
+}
+
+class InfoWidgets extends StatelessWidget {
+  const InfoWidgets({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return PageScaffold(
+      title: "Info Widgets Demo",
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ListView(
+          children: const [
+            InfoCard(
+              message:
+                  "This is a normal info card. This is the default display type. Use this in most scenarios.",
+              useStandardCardMargin: true,
+            ),
+            InfoCard(
+              message:
+                  "This is a low info card. Use this for information of lesser importance.",
+              displayType: InfoCardDisplayType.low,
+              useStandardCardMargin: true,
+            ),
+            InfoCard(
+              message:
+                  "This is a themed low info card. Use this for information of medium importance.",
+              displayType: InfoCardDisplayType.themedLow,
+              useStandardCardMargin: true,
+            ),
+            InfoCard(
+              message:
+                  "This is a warning info card. Use this for situations that require attention.",
+              displayType: InfoCardDisplayType.warning,
+              useStandardCardMargin: true,
+            ),
+            InfoCard(
+              message:
+                  "This is an error info card. Use this for displaying errors.",
+              displayType: InfoCardDisplayType.error,
+              useStandardCardMargin: true,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

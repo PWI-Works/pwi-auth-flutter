@@ -4,7 +4,13 @@ import 'package:pwi_auth/widgets/loading_page_view_model.dart';
 
 /// A loading page that cycles through different loading messages with fade transitions
 class LoadingPage extends ViewWidget<LoadingPageViewModel> {
-  /// Creates a loading view with cycling messages
+  /// Creates a loading view with an optional initial message and then with cycling messages.
+  ///
+  /// This widget cycles through predefined messages. This gives users better confidence that something is actually
+  /// happening, and keeps the wait interesting.
+  ///
+  /// If during debugging you start to see the messages repeating, it could indicate that there
+  /// is an error behind the scenes that needs to be addressed.
   LoadingPage({super.key, String? initialMessage})
       : super(builder: () => LoadingPageViewModel(initialMessage));
 

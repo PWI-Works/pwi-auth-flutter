@@ -1,0 +1,20 @@
+# builds, analyzes, tests, and publishes a Firebase Hosting PR preview for automation forms
+
+name: Analyze, Test & Preview on PR
+
+on:
+  pull_request:
+
+jobs:
+  format_check:
+    name: "Check Dart Formatting"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+        
+      - name: Check Dart Formatting
+        run: dart format --set-exit-if-changed .

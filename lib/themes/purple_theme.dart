@@ -1,6 +1,7 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 /// The [PurpleTheme] defines light and dark themes for the app.
 ///
 /// Theme setup for FlexColorScheme package v8.
@@ -84,8 +85,7 @@ abstract final class PurpleTheme {
       keepPrimary: true,
       keepTertiary: true,
     ),
-    tones: FlexSchemeVariant.chroma
-        .tones(Brightness.light),
+    tones: FlexSchemeVariant.chroma.tones(Brightness.light),
     // Direct ThemeData properties.
     visualDensity: FlexColorScheme.comfortablePlatformDensity,
     cupertinoOverrideTheme: const CupertinoThemeData(applyThemeToAll: true),
@@ -156,8 +156,7 @@ abstract final class PurpleTheme {
       useTertiary: true,
       keepPrimary: true,
     ),
-    tones: FlexSchemeVariant.chroma
-        .tones(Brightness.dark),
+    tones: FlexSchemeVariant.chroma.tones(Brightness.dark),
     // Direct ThemeData properties.
     visualDensity: FlexColorScheme.comfortablePlatformDensity,
     cupertinoOverrideTheme: const CupertinoThemeData(applyThemeToAll: true),

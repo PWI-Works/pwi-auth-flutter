@@ -6,7 +6,8 @@ import 'package:mvvm_plus/mvvm_plus.dart';
 import 'package:pwi_auth/pwi_auth.dart';
 
 class AuthCheckViewModel extends ViewModel {
-  late final PwiAuth _auth;
+  late final PwiAuthBase _auth;
+  PwiAuthBase get auth => _auth;
   final String authenticatedRoute;
   final String appTitle;
 
@@ -48,13 +49,10 @@ class AuthCheckViewModel extends ViewModel {
   }
 
   AuthCheckViewModel(
-      {required this.authenticatedRoute, required this.appTitle}) {
-    try {
-      _auth = get<PwiAuth>();
-    } catch (e) {
-      throw ("PwiAuth service not initialized with Bilocators.");
-    }
-
+      {required this.authenticatedRoute,
+      required this.appTitle,
+      PwiAuthBase? auth})
+      : _auth = auth ?? PwiAuth() {
     _authSubscription = _auth.authStateChanges.listen((_) => buildView());
     _errorSubscription =
         _auth.errors.listen((errorMessage) => error = errorMessage);

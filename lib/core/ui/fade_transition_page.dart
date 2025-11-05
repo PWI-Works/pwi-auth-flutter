@@ -48,6 +48,6 @@ class PageBasedFadeTransitionRoute<T> extends PageRoute<T> {
 
   @override
   Widget buildTransitions(BuildContext context, Animation<double> animation,
-      Animation<double> secondaryAnimation, Widget child) =>
+          Animation<double> secondaryAnimation, Widget child) =>
       child;
 }

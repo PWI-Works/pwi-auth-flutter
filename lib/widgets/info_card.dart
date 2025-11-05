@@ -105,7 +105,7 @@ class InfoCard extends StatelessWidget {
       case InfoCardDisplayType.error:
         return colorScheme.error;
       case InfoCardDisplayType.warning:
-        return SemanticColors.warning;
+        return SemanticColors.warning.background;
       case InfoCardDisplayType.normal:
         return colorScheme.tertiary;
       case InfoCardDisplayType.themedLow:
@@ -125,7 +125,7 @@ class InfoCard extends StatelessWidget {
       case InfoCardDisplayType.error:
         return colorScheme.onError;
       case InfoCardDisplayType.warning:
-        return SemanticColors.onWarning;
+        return SemanticColors.warning.foreground;
       case InfoCardDisplayType.normal:
         return colorScheme.onTertiary;
       case InfoCardDisplayType.themedLow:
