@@ -1,5 +1,6 @@
 import 'dart:async' show Future, StreamSubscription, unawaited;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:mvvm_plus/mvvm_plus.dart';
 import 'package:pwi_auth/data/models/employee.dart';
@@ -94,16 +95,7 @@ class DefaultGlobalController extends Model {
   Employee? get loggedInEmployee => _loggedInEmployee;
 
   /// Mirror of Firebase user state so UI can access auth metadata.
-  User? get firebaseAuthUser => _firebaseAuthUser;
-
-  /// Convenience getter for the Firebase user's email.
-  String? get firebaseUserEmail => _firebaseAuthUser?.email;
-
-  /// Convenience getter for the Firebase display name.
-  String? get firebaseUserDisplayName => _firebaseAuthUser?.displayName;
-
-  /// Convenience getter for the Firebase UID.
-  String? get firebaseUserUid => _firebaseAuthUser?.uid;
+  User? get user => _firebaseAuthUser;
 
   /// Internal one-time setup invoked by the static [initialize] helpers.
   ///
@@ -270,8 +262,42 @@ class DefaultGlobalController extends Model {
         // Fall back to default service implementations when the caller does not
         // pass mocks or overrides. This keeps the controller functional in
         // production builds with zero additional wiring.
-        _employeeService = employeeService ?? EmployeeService();
-        _userService = userService ?? UserService();
+        final needsDefaultEmployeeService = employeeService == null;
+        final needsDefaultUserService = userService == null;
+        if ((needsDefaultEmployeeService || needsDefaultUserService) &&
+            !_isFirebaseConfigured()) {
+          throw StateError(
+            'DefaultGlobalController requires Firebase to be initialized before it can '
+            'use UserInitializationType.firestoreEmployee. Ensure Firebase.initializeApp() '
+            'runs with valid options (for example from firebase_options.dart) or pass '
+            'userInitializationType: UserInitializationType.firebaseAuthUser when calling initialize.',
+          );
+        }
+        try {
+          final resolvedEmployeeService =
+              employeeService ?? EmployeeService();
+          final resolvedUserService = userService ?? UserService();
+          _employeeService = resolvedEmployeeService;
+          _userService = resolvedUserService;
+        } on FirebaseException catch (error, stackTrace) {
+          Error.throwWithStackTrace(
+            StateError(
+              'DefaultGlobalController could not configure Firestore-backed user services. '
+              'Verify your Firebase project configuration or provide custom service overrides. '
+              'Underlying error: ${error.message ?? error.code}.',
+            ),
+            stackTrace,
+          );
+        } catch (error, stackTrace) {
+          Error.throwWithStackTrace(
+            StateError(
+              'DefaultGlobalController could not configure Firestore-backed user services. '
+              'Verify your Firebase project configuration or provide custom service overrides. '
+              'Underlying error: $error.',
+            ),
+            stackTrace,
+          );
+        }
         break;
     }
 
@@ -312,9 +338,24 @@ class DefaultGlobalController extends Model {
         }
         break;
       case UserInitializationType.firestoreEmployee:
-        // No validation required – all arguments are optional and default to
+        // No validation required - all arguments are optional and default to
         // concrete implementations in [_configureUserInitialization].
         break;
+    }
+  }
+
+  static bool _isFirebaseConfigured() {
+    try {
+      if (Firebase.apps.isNotEmpty) {
+        return true;
+      }
+      // Attempt to read the default app; if this succeeds the configuration is present.
+      Firebase.app();
+      return true;
+    } on FirebaseException {
+      return false;
+    } catch (_) {
+      return false;
     }
   }
 
