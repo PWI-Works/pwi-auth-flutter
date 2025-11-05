@@ -15,6 +15,7 @@ class AppRouter {
 
   // Constant for the login route path
   static const String loginRoutePath = '/login';
+  static const String _redirectQueryParameter = 'from';
 
   // Late initialization of the GoRouter instance
   late final GoRouter router = _createRouter();
@@ -69,10 +70,25 @@ class AppRouter {
         final isLoginRoute = state.uri.path == loginRoutePath;
 
         if (!isSignedIn && !isLoginRoute) {
-          return loginRoutePath;
+          final redirectUri = Uri(
+            path: loginRoutePath,
+            queryParameters: {
+              _redirectQueryParameter: state.uri.toString(),
+            },
+          );
+          return redirectUri.toString();
         }
 
         if (isSignedIn && isLoginRoute) {
+          final redirectLocation =
+              state.uri.queryParameters[_redirectQueryParameter];
+          if (redirectLocation != null && redirectLocation.isNotEmpty) {
+            final parsedRedirect = Uri.tryParse(redirectLocation);
+            if (parsedRedirect != null &&
+                parsedRedirect.path != loginRoutePath) {
+              return redirectLocation;
+            }
+          }
           return defaultRoute;
         }
 
@@ -104,7 +120,17 @@ class AppRouter {
             key: state.pageKey,
             child: LoginPage(
               appTitle: global.appTitle,
-              onAuthenticated: (context) => context.go(defaultRoute),
+              onAuthenticated: (context) {
+                final redirectLocation =
+                    state.uri.queryParameters[_redirectQueryParameter];
+                if (redirectLocation != null &&
+                    redirectLocation.isNotEmpty &&
+                    Uri.tryParse(redirectLocation)?.path != loginRoutePath) {
+                  context.go(redirectLocation);
+                  return;
+                }
+                context.go(defaultRoute);
+              },
               auth: _global!.auth,
             ),
           ),
