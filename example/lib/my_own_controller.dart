@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pwi_auth/core/default_global_controller.dart';
+import 'package:pwi_auth/core/user_initialization_type.dart';
 import 'package:pwi_auth/pwi_auth.dart';
 
 /// Example customization of [DefaultGlobalController] that adds extra state.
@@ -18,6 +19,7 @@ class MyOwnController extends DefaultGlobalController {
     auth: auth,
     builder: ({required String appTitle, PwiAuthBase? auth}) =>
         MyOwnController._(),
+    userInitializationType: UserInitializationType.firebaseAuthUser,
   );
 
   /// Convenient typed accessor for the singleton instance.
