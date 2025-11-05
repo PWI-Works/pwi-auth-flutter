@@ -11,8 +11,6 @@ import 'package:pwi_auth/widgets/page_scaffold.dart';
 import 'my_own_controller.dart';
 import 'mock_pwi_auth.dart';
 
-// todo fix the background color for the navigation bar
-
 void main() {
   // Initialize the global controller before running the app
   MyOwnController.initialize(
