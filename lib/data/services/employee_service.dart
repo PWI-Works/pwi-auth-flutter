@@ -1,11 +1,12 @@
-// lib/services/employee_service.dart
+// lib/data/services/employee_service.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pwi_auth/data/services/employee_service_interface.dart';
 import 'package:pwi_auth/data/models/employee.dart';
 import 'package:pwi_auth/data/services/firebase_paths.dart';
 
 /// Service class for handling employee-related operations.
-class EmployeeService {
+class EmployeeService implements EmployeeServiceInterface {
   EmployeeService._internal({FirebaseFirestore? firestore})
       : _employeeCollection = (firestore ?? FirebaseFirestore.instance)
             .collection(FirebasePaths.collectionEmployees);
@@ -25,6 +26,7 @@ class EmployeeService {
   /// and filtering out employees whose preferredName contains "test".
   ///
   /// \return A [Stream] of lists of [Employee] objects.
+  @override
   Stream<List<Employee>> getEmployeesStream() {
     return _employeeCollection
         // Apply server-side filter to exclude employees with employeeType "Shared Device"
@@ -48,6 +50,7 @@ class EmployeeService {
   /// [id] - The unique identifier of the employee.
   ///
   /// \return A [Future] that resolves to an [Employee] object.
+  @override
   Future<Employee> getEmployeeById(String id) async {
     // Fetch the document with the specified [id] from the employee collection
     final doc = await _employeeCollection.doc(id).get();

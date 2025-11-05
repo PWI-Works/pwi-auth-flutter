@@ -1,12 +1,13 @@
-// lib/services/user_service.dart
+// lib/data/services/user_service.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pwi_auth/data/services/user_service_interface.dart';
 import 'package:pwi_auth/data/models/firestore_user.dart';
 import 'package:pwi_auth/data/services/firebase_paths.dart';
 
 /// Service class for managing user-related operations.
-class UserService {
+class UserService implements UserServiceInterface {
   /// Instance of Firestore to interact with the database.
   final FirebaseFirestore _firestore;
 
@@ -84,6 +85,7 @@ class UserService {
   /// * [authUser] - The authenticated [User] object.
   ///
   /// Returns the employee ID as a [String] if found, otherwise returns null.
+  @override
   Future<String?> getEmployeeIdFromUser(User authUser) async {
     if (_useEmulators) {
       final query = await _employeesCollection

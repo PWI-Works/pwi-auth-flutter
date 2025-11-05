@@ -2,6 +2,10 @@ import 'dart:async' show Future, StreamSubscription, unawaited;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mvvm_plus/mvvm_plus.dart';
+import 'package:pwi_auth/data/services/employee_service_interface.dart';
+import 'package:pwi_auth/data/services/user_service_interface.dart';
+import 'package:pwi_auth/core/user_initialization_type.dart';
+import 'package:pwi_auth/data/services/services.dart';
 import 'package:pwi_auth/pwi_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -60,6 +64,10 @@ class DefaultGlobalController extends Model {
   static DefaultGlobalController? get instanceOrNull => _instance;
 
   bool _isConfigured = false;
+  bool _userServicesConfigured = false;
+  UserInitializationType? _userInitializationType;
+  EmployeeServiceInterface? _employeeService;
+  UserServiceInterface? _userService;
 
   void _setup({required String appTitle, PwiAuthBase? auth}) {
     if (_isConfigured) {
@@ -77,6 +85,9 @@ class DefaultGlobalController extends Model {
     required String appTitle,
     PwiAuthBase? auth,
     GlobalControllerBuilder? builder,
+    UserInitializationType userType = UserInitializationType.firestoreEmployee,
+    EmployeeServiceInterface? employeeService,
+    UserServiceInterface? userService,
   }) =>
       initializeSubclass<DefaultGlobalController>(
         appTitle: appTitle,
@@ -84,6 +95,9 @@ class DefaultGlobalController extends Model {
         builder: builder ??
             ({required String appTitle, PwiAuthBase? auth}) =>
                 DefaultGlobalController._create(),
+        userType: userType,
+        employeeService: employeeService,
+        userService: userService,
       );
 
   /// Initializes the singleton with a custom subclass while keeping type safety.
@@ -97,7 +111,16 @@ class DefaultGlobalController extends Model {
     required String appTitle,
     PwiAuthBase? auth,
     required TypedGlobalControllerBuilder<T> builder,
+    UserInitializationType userType = UserInitializationType.firestoreEmployee,
+    EmployeeServiceInterface? employeeService,
+    UserServiceInterface? userService,
   }) {
+    _validateUserInitialization(
+      userType: userType,
+      employeeService: employeeService,
+      userService: userService,
+    );
+
     final existing = _instance;
     if (existing != null) {
       if (existing.appTitle != appTitle) {
@@ -118,6 +141,11 @@ class DefaultGlobalController extends Model {
           '${existing.runtimeType}.',
         );
       }
+      existing._configureUserInitialization(
+        userType: userType,
+        employeeService: employeeService,
+        userService: userService,
+      );
       return existing;
     }
 
@@ -125,9 +153,81 @@ class DefaultGlobalController extends Model {
       appTitle: appTitle,
       auth: auth,
     );
+    controller._configureUserInitialization(
+      userType: userType,
+      employeeService: employeeService,
+      userService: userService,
+    );
     controller._setup(appTitle: appTitle, auth: auth);
     _instance = controller;
     return controller;
+  }
+
+  void _configureUserInitialization({
+    required UserInitializationType userType,
+    EmployeeServiceInterface? employeeService,
+    UserServiceInterface? userService,
+  }) {
+    if (_userServicesConfigured) {
+      if (_userInitializationType != userType) {
+        throw StateError(
+          'GlobalControllerInterface already initialized with userType '
+          '$_userInitializationType.',
+        );
+      }
+      if (employeeService != null && !identical(_employeeService, employeeService)) {
+        throw StateError(
+          'GlobalControllerInterface already initialized with an employeeService instance.',
+        );
+      }
+      if (userService != null && !identical(_userService, userService)) {
+        throw StateError(
+          'GlobalControllerInterface already initialized with a userService instance.',
+        );
+      }
+      return;
+    }
+
+    switch (userType) {
+      case UserInitializationType.firebaseAuthUser:
+        _employeeService = null;
+        _userService = null;
+        break;
+      case UserInitializationType.firestoreEmployee:
+        _employeeService = employeeService ?? EmployeeService();
+        _userService = userService ?? UserService();
+        break;
+    }
+
+    _userInitializationType = userType;
+    _userServicesConfigured = true;
+  }
+
+  static void _validateUserInitialization({
+    required UserInitializationType userType,
+    EmployeeServiceInterface? employeeService,
+    UserServiceInterface? userService,
+  }) {
+    switch (userType) {
+      case UserInitializationType.firebaseAuthUser:
+        if (employeeService != null) {
+          throw ArgumentError.value(
+            employeeService,
+            'employeeService',
+            'must be null when userType is firebaseAuthUser.',
+          );
+        }
+        if (userService != null) {
+          throw ArgumentError.value(
+            userService,
+            'userService',
+            'must be null when userType is firebaseAuthUser.',
+          );
+        }
+        break;
+      case UserInitializationType.firestoreEmployee:
+        break;
+    }
   }
 
   /// Returns the active singleton instance cast to [T].
@@ -243,6 +343,10 @@ class DefaultGlobalController extends Model {
     _authSubscription?.cancel();
     themeMode.removeListener(_saveTheme);
     _auth = null;
+    _employeeService = null;
+    _userService = null;
+    _userInitializationType = null;
+    _userServicesConfigured = false;
     _isConfigured = false;
     if (identical(_instance, this)) {
       _instance = null;
