@@ -253,7 +253,7 @@ class DefaultGlobalController extends Model {
     }
 
     switch (userType) {
-      case UserInitializationType.firebaseAuthUser:
+      case UserInitializationType.authUser:
         // Rely purely on Firebase auth; nothing extra to cache.
         _employeeService = null;
         _userService = null;
@@ -269,13 +269,12 @@ class DefaultGlobalController extends Model {
           throw StateError(
             'DefaultGlobalController requires Firebase to be initialized before it can '
             'use UserInitializationType.firestoreEmployee. Ensure Firebase.initializeApp() '
-            'runs with valid options (for example from firebase_options.dart) or pass '
-            'userInitializationType: UserInitializationType.firebaseAuthUser when calling initialize.',
+            'runs with valid options or pass '
+            'userInitializationType: UserInitializationType.authUser in your controller implementation.',
           );
         }
         try {
-          final resolvedEmployeeService =
-              employeeService ?? EmployeeService();
+          final resolvedEmployeeService = employeeService ?? EmployeeService();
           final resolvedUserService = userService ?? UserService();
           _employeeService = resolvedEmployeeService;
           _userService = resolvedUserService;
@@ -318,7 +317,7 @@ class DefaultGlobalController extends Model {
     UserServiceInterface? userService,
   }) {
     switch (userType) {
-      case UserInitializationType.firebaseAuthUser:
+      case UserInitializationType.authUser:
         // Firebase auth-only mode should not receive service overrides because
         // they would never be invoked. Flag them early so the caller can
         // migrate to `firestoreEmployee` if they actually needed them.

@@ -19,7 +19,8 @@ class MyOwnController extends DefaultGlobalController {
     auth: auth,
     builder: ({required String appTitle, PwiAuthBase? auth}) =>
         MyOwnController._(),
-    userInitializationType: UserInitializationType.firebaseAuthUser,
+    // since we don't use Firebase in this project, we must stick to authUser
+    userInitializationType: UserInitializationType.authUser,
   );
 
   /// Convenient typed accessor for the singleton instance.
