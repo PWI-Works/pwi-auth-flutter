@@ -22,7 +22,7 @@ class EmployeeService implements EmployeeServiceInterface {
   // Reference to the Firestore collection for employees
   final CollectionReference _employeeCollection;
 
-  /// Streams real-time updates of employees, excluding those with employeeType "Shared Device" 
+  /// Streams real-time updates of employees, excluding those with employeeType "Shared Device"
   /// and filtering out employees whose preferredName contains "test".
   ///
   /// \return A [Stream] of lists of [Employee] objects.
