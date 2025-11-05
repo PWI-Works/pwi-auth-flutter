@@ -6,17 +6,21 @@ import 'package:pwi_auth/core/default_global_controller.dart';
 class DefaultAppViewModel extends ViewModel {
   DefaultGlobalController get controller => DefaultGlobalController.instance;
 
-  ThemeMode get themeMode => DefaultGlobalController.instance.themeMode.value;
+  late final themeMode = createProperty<ThemeMode>(controller.themeMode.value);
 
   String get appTitle => controller.appTitle;
 
   DefaultAppViewModel() {
-    controller.themeMode.addListener(() => buildView());
+    controller.themeMode.addListener(_setThemeMode);
+  }
+
+  void _setThemeMode() {
+    themeMode.value = controller.themeMode.value;
   }
 
   @override
   dispose() {
-    controller.themeMode.removeListener(() => buildView());
+    controller.themeMode.removeListener(_setThemeMode);
     super.dispose();
   }
 }

@@ -22,7 +22,7 @@ class DefaultApp extends ViewWidget<DefaultAppViewModel> {
       title: viewModel.appTitle,
       theme: _lightTheme,
       darkTheme: _darkTheme,
-      themeMode: viewModel.themeMode,
+      themeMode: viewModel.themeMode.value,
       routerConfig: AppRouter.instance.router,
     );
   }
