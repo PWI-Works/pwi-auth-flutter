@@ -12,6 +12,6 @@ class DefaultRoutes {
     title: 'Settings',
     icon: Icons.settings,
     route: '/settings',
-    contextBuilder: (context) => SettingsPage(),
+    contextBuilder: (context, _) => SettingsPage(),
   );
 }

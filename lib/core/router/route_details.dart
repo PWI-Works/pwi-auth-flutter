@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 /// A class that holds the details for a navigation button.
 class RouteDetails {
@@ -18,7 +19,8 @@ class RouteDetails {
   final String route;
 
   /// The widget builder for the route.
-  final Widget Function(BuildContext) contextBuilder;
+  /// The [GoRouterState] is optional to allow callers to access parameters when needed.
+  final Widget Function(BuildContext, GoRouterState?) contextBuilder;
 
   /// The child routes of the specific page
   final List<RouteDetails>? childRoutes;
