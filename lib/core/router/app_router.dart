@@ -150,7 +150,7 @@ class AppRouter {
         // Page builder for the route
         pageBuilder: (context, state) => FadeTransitionPage<dynamic>(
           key: state.pageKey,
-          child: routeDetail.contextBuilder(context),
+          child: routeDetail.contextBuilder(context, state),
         ),
         // Recursively builds child routes if they exist
         routes: routeDetail.childRoutes != null
