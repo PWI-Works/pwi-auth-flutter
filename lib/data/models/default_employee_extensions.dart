@@ -18,13 +18,13 @@ import 'package:pwi_auth/data/models/employee.dart';
 extension DefaultEmployeeExtensions on Employee {
   /// True when the employee's seniority indicates a supervisory position.
   bool get isSupervisor =>
-      !seniorityString.toLowerCase().contains('orange') &&
-      !seniorityString.toLowerCase().contains('yellow') &&
-      seniorityString.isNotEmpty;
+      !seniority.toLowerCase().contains('orange') &&
+      !seniority.toLowerCase().contains('yellow') &&
+      seniority.isNotEmpty;
 
   /// True when the employee holds an executive-level role.
   bool get isExecutive =>
-      seniorityString.toLowerCase().contains('red') ||
+      seniority.toLowerCase().contains('red') ||
       jobTitle.toLowerCase().contains('chief');
 
   /// True when the employee belongs to the software department.

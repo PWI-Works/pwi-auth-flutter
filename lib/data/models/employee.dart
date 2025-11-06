@@ -33,7 +33,7 @@ class Employee {
   final DocumentReference? supervisor;
 
   /// String representing the employee's seniority level
-  final String seniorityString;
+  final String seniority;
 
   /// String representing the employee's job title
   final String jobTitle;
@@ -66,7 +66,7 @@ class Employee {
     required this.fullNameByLastName,
     required this.supervisorId,
     this.supervisor,
-    required this.seniorityString,
+    required this.seniority,
     required this.jobTitle,
     required this.department,
     this.employeeType,
@@ -125,7 +125,7 @@ class Employee {
       fullNameByLastName: getString('fullNameByLastname'),
       supervisorId: supervisor?.id ?? '',
       supervisor: supervisor,
-      seniorityString: getString('seniorityString'),
+      seniority: getString('seniorityString'),
       jobTitle: getString('jobTitleString', '-'),
       department: getString('departmentString', '-'),
       employeeType: getString('employeeType'),
@@ -160,7 +160,7 @@ class Employee {
   /// Returns the color associated with the employee's seniority level.
   /// This method checks the seniorityString to determine the appropriate color. If the seniorityString contains specific keywords, it returns the corresponding color. If no keywords match, it returns grey.
   ColorSet get seniorityColor {
-    final s = seniorityString.toLowerCase();
+    final s = seniority.toLowerCase();
     if (s.contains('yellow')) {
       return SemanticColors.yellowSeniority;
     }
