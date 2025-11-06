@@ -1,6 +1,6 @@
 name: pwi_auth
 description: "PWI Cross-Domain Authentication for Flutter"
-version: 0.2.24
+version: 0.2.25
 homepage: "https://github.com/PWI-Works/pwi-auth-flutter"
 
 environment:
