@@ -1,6 +1,1 @@
-enum Themes {
-  purple,
-  blue,
-  green,
-  red,
-}
+enum Themes { purple, blue, green, red, yellow }

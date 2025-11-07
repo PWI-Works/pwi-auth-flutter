@@ -7,6 +7,7 @@ import 'package:pwi_auth/themes/green_theme.dart';
 import 'package:pwi_auth/themes/purple_theme.dart';
 import 'package:pwi_auth/themes/red_theme.dart';
 import 'package:pwi_auth/themes/themes.dart';
+import 'package:pwi_auth/themes/yellow_theme.dart';
 
 /// The main application widget that sets up the router and theme.
 class DefaultApp extends ViewWidget<DefaultAppViewModel> {
@@ -32,6 +33,7 @@ class DefaultApp extends ViewWidget<DefaultAppViewModel> {
         Themes.blue => BlueTheme.light,
         Themes.green => GreenTheme.light,
         Themes.red => RedTheme.light,
+        Themes.yellow => YellowTheme.light,
       };
 
   ThemeData get _darkTheme => switch (selectedTheme) {
@@ -39,5 +41,6 @@ class DefaultApp extends ViewWidget<DefaultAppViewModel> {
         Themes.blue => BlueTheme.dark,
         Themes.green => GreenTheme.dark,
         Themes.red => RedTheme.dark,
+        Themes.yellow => YellowTheme.dark,
       };
 }
