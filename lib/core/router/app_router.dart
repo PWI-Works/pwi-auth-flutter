@@ -25,6 +25,7 @@ class AppRouter {
 
   /// A list of routes that are displayed in the navigation bar and rail
   static List<RouteDetails>? _navigationRoutes;
+  static bool _useNavigation = true;
 
   /// The global controller instance, used internally to force initialization
   DefaultGlobalController get global {
@@ -50,13 +51,22 @@ class AppRouter {
     return routes;
   }
 
-  /// Initialize the global controller. Should be called at app startup.
+  /// Initialize the global controller and configure how routes are displayed.
+  ///
+  /// When [useNavigation] is `true`, each route is rendered inside the shared
+  /// [MainScaffold]. Setting it to `false` returns the route widgets directly.
   static void initialize({
     required DefaultGlobalController globalController,
     required List<RouteDetails> navigationRoutes,
+    bool useNavigation = true,
   }) {
+    assert(
+      !useNavigation || navigationRoutes.length >= 2,
+      'You must supply at least two routes when useNavigation is true.',
+    );
     _global = globalController;
     _navigationRoutes = navigationRoutes;
+    _useNavigation = useNavigation;
   }
 
   /// Creates and configures the GoRouter instance
@@ -98,20 +108,22 @@ class AppRouter {
       initialLocation: _global!.isSignedIn ? defaultRoute : loginRoutePath,
       // List of routes for the router
       routes: [
-        ShellRoute(
-          // Page builder for the shell route
-          pageBuilder: (context, state, child) => FadeTransitionPage<dynamic>(
-            key: state.pageKey,
-            child: MainScaffold(
-              // Determines the selected index based on the current path
-              selectedIndex: navigationRoutes.indexWhere((routeDetail) =>
-                  state.uri.path.startsWith(routeDetail.route)),
-              child: child,
+        if (_useNavigation)
+          ShellRoute(
+            // Page builder for the shell route
+            pageBuilder: (context, state, child) => FadeTransitionPage<dynamic>(
+              key: state.pageKey,
+              child: MainScaffold(
+                // Determines the selected index based on the current path
+                selectedIndex: navigationRoutes.indexWhere((routeDetail) =>
+                    state.uri.path.startsWith(routeDetail.route)),
+                child: child,
+              ),
             ),
+            // Builds the routes and their child routes
+            routes: _buildRoutesAndChildRoutes(navigationRoutes),
           ),
-          // Builds the routes and their child routes
-          routes: _buildRoutesAndChildRoutes(navigationRoutes),
-        ),
+        if (!_useNavigation) ..._buildRoutesAndChildRoutes(navigationRoutes),
         GoRoute(
           // Path for the login route
           path: loginRoutePath,
