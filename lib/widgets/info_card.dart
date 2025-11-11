@@ -22,6 +22,10 @@ enum InfoCardDisplayType {
   /// Low display type.
   /// Uses surface container highest color.
   low,
+
+  /// Success display type.
+  /// Uses success color from semantic palette.
+  success,
 }
 
 /// A widget that displays an informational card with a message.
@@ -42,15 +46,21 @@ class InfoCard extends StatelessWidget {
   /// See [InfoCardDisplayType] for more information.
   final InfoCardDisplayType displayType;
 
+  /// Optional override for icon to display alongside the message.
+  final Icon? icon;
+
   /// Creates an [InfoCard] widget.
   ///
   /// The [message] parameter is required. The [useStandardCardMargin] parameter defaults
   /// to false, and the [displayType] parameter defaults to [InfoCardDisplayType.normal].
+  /// The [icon] parameter is optional and can be used to override the default icon. If not provided,
+  /// the icon will be determined based on the [displayType].
   const InfoCard({
     super.key,
     required this.message,
     this.useStandardCardMargin = false,
     this.displayType = InfoCardDisplayType.normal,
+    this.icon,
   });
 
   @override
@@ -85,11 +95,19 @@ class InfoCard extends StatelessWidget {
   }
 
   IconData get _icon {
+    // If an icon override is provided, use it
+    if (icon != null) {
+      return icon!.icon!;
+    }
+
+    // Otherwise, select icon based on display type
     switch (displayType) {
       case InfoCardDisplayType.error:
         return Icons.error_outline;
       case InfoCardDisplayType.warning:
         return Icons.warning_amber_outlined;
+      case InfoCardDisplayType.success:
+        return Icons.check_circle_outline;
       default:
         return Icons.info_outlined;
     }
@@ -112,6 +130,8 @@ class InfoCard extends StatelessWidget {
         return colorScheme.secondaryContainer;
       case InfoCardDisplayType.low:
         return colorScheme.surfaceContainerHighest;
+      case InfoCardDisplayType.success:
+        return SemanticColors.greenSeniority.background;
     }
   }
 
@@ -132,6 +152,8 @@ class InfoCard extends StatelessWidget {
         return colorScheme.onSecondaryContainer;
       case InfoCardDisplayType.low:
         return colorScheme.onSurface;
+      case InfoCardDisplayType.success:
+        return SemanticColors.greenSeniority.foreground;
     }
   }
 }
