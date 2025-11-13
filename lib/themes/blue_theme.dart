@@ -4,6 +4,8 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+// this is the "Bahama and Trinidad" blue theme from https://rydmike.com/flexcolorscheme/themesplayground-latest/
+
 /// The [BlueTheme] defines light and dark themes for the app with blue as the primary color.
 ///
 /// Theme setup for FlexColorScheme package v8.
