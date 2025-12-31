@@ -24,6 +24,9 @@ class PageScaffold extends StatelessWidget {
   /// A flag indicating whether to hide the app bar.
   final bool hideAppBar;
 
+  /// The widget to display at the bottom of the app bar.
+  final PreferredSizeWidget? appBarBottom;
+
   /// A button displayed floating above [body], in the bottom right corner.
   ///
   /// Typically a [FloatingActionButton].
@@ -48,6 +51,7 @@ class PageScaffold extends StatelessWidget {
     this.drawer,
     this.appBarActions,
     this.hideAppBar = false,
+    this.appBarBottom,
     this.floatingActionButton,
     this.floatingActionButtonLocation,
     this.floatingActionButtonAnimator,
@@ -55,34 +59,37 @@ class PageScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      return Scaffold(
-        appBar: hideAppBar
-            ? null
-            : AppBar(
-                title: Text(title ?? "untitled"),
-                centerTitle: true,
-                actions: [
-                  if (showSettings && endDrawer == null)
-                    Builder(
-                      builder: (context) => IconButton(
-                        icon: const Icon(Icons.settings),
-                        onPressed: () => Scaffold.of(context).openEndDrawer(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Scaffold(
+          appBar: hideAppBar
+              ? null
+              : AppBar(
+                  title: Text(title ?? "untitled"),
+                  centerTitle: true,
+                  bottom: appBarBottom,
+                  actions: [
+                    if (showSettings && endDrawer == null)
+                      Builder(
+                        builder: (context) => IconButton(
+                          icon: const Icon(Icons.settings),
+                          onPressed: () => Scaffold.of(context).openEndDrawer(),
+                        ),
                       ),
-                    ),
-                  if (appBarActions != null) ...appBarActions!,
-                ],
-              ),
-        drawer: hideAppBar ? null : drawer,
-        endDrawer: hideAppBar
-            ? null
-            : endDrawer ?? (showSettings ? const SettingsDrawer() : null),
-        body: body,
-        floatingActionButton: floatingActionButton,
-        floatingActionButtonAnimator: floatingActionButtonAnimator,
-        floatingActionButtonLocation:
-            floatingActionButtonLocation, // This trailing comma makes auto-formatting nicer for build methods.
-      );
-    });
+                    if (appBarActions != null) ...appBarActions!,
+                  ],
+                ),
+          drawer: hideAppBar ? null : drawer,
+          endDrawer: hideAppBar
+              ? null
+              : endDrawer ?? (showSettings ? const SettingsDrawer() : null),
+          body: body,
+          floatingActionButton: floatingActionButton,
+          floatingActionButtonAnimator: floatingActionButtonAnimator,
+          floatingActionButtonLocation:
+              floatingActionButtonLocation, // This trailing comma makes auto-formatting nicer for build methods.
+        );
+      },
+    );
   }
 }
