@@ -74,7 +74,6 @@ class InfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final trimmedLink = link?.trim();
     final hasLink = trimmedLink != null && trimmedLink.isNotEmpty;
-    final textColor = _getTextColor(context);
 
     return Card(
       margin: useStandardCardMargin ? null : EdgeInsets.zero,
@@ -86,16 +85,13 @@ class InfoCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(
-              _icon,
-              color: _getTextColor(context),
-            ),
+            Icon(_icon, color: _getTextColor(context)),
             const SizedBox(width: 8),
             Flexible(
               child: hasLink
                   ? RichText(
                       text: TextSpan(
-                        style: TextStyle(color: textColor),
+                        style: TextStyle(color: _getTextColor(context)),
                         children: [
                           TextSpan(text: message),
                           TextSpan(
@@ -111,7 +107,7 @@ class InfoCard extends StatelessWidget {
                     )
                   : Text(
                       message,
-                      style: TextStyle(color: textColor),
+                      style: TextStyle(color: _getTextColor(context)),
                     ),
             ),
           ],
