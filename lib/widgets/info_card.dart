@@ -1,7 +1,5 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:pwi_auth/semantic_colors.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 /// Enum representing the different display types for the [InfoCard].
 enum InfoCardDisplayType {
@@ -35,8 +33,11 @@ enum InfoCardDisplayType {
 /// The [InfoCard] widget displays a card with a message and an icon. The appearance
 /// of the card can be customized using the [useStandardCardMargin] and [displayType] properties.
 class InfoCard extends StatelessWidget {
-  /// The message to display inside the card.
-  final String message;
+  /// The plain text message to display inside the card.
+  final String? message;
+
+  /// The rich text message to display inside the card.
+  final InlineSpan? richTextMessage;
 
   /// Whether to use the standard margin for the card.
   ///
@@ -51,29 +52,27 @@ class InfoCard extends StatelessWidget {
   /// Optional override for icon to display alongside the message.
   final Icon? icon;
 
-  /// Optional link text to display after the message.
-  final String? link;
-
   /// Creates an [InfoCard] widget.
   ///
-  /// The [message] parameter is required. The [useStandardCardMargin] parameter defaults
+  /// Provide either [message] or [richTextMessage]. The [useStandardCardMargin] parameter defaults
   /// to false, and the [displayType] parameter defaults to [InfoCardDisplayType.normal].
   /// The [icon] parameter is optional and can be used to override the default icon. If not provided,
   /// the icon will be determined based on the [displayType].
-  /// If [link] is provided, it is appended to the message as a clickable hyperlink.
   const InfoCard({
     super.key,
-    required this.message,
+    this.message,
+    this.richTextMessage,
     this.useStandardCardMargin = false,
     this.displayType = InfoCardDisplayType.normal,
     this.icon,
-    this.link,
-  });
+  }) : assert(
+          message != null || richTextMessage != null,
+          'Provide either message or richTextMessage.',
+        );
 
   @override
   Widget build(BuildContext context) {
-    final trimmedLink = link?.trim();
-    final hasLink = trimmedLink != null && trimmedLink.isNotEmpty;
+    final textColor = _getTextColor(context);
 
     return Card(
       margin: useStandardCardMargin ? null : EdgeInsets.zero,
@@ -88,27 +87,15 @@ class InfoCard extends StatelessWidget {
             Icon(_icon, color: _getTextColor(context)),
             const SizedBox(width: 8),
             Flexible(
-              child: hasLink
-                  ? RichText(
-                      text: TextSpan(
-                        style: TextStyle(color: _getTextColor(context)),
-                        children: [
-                          TextSpan(text: message),
-                          TextSpan(
-                            text: ' $trimmedLink',
-                            style: const TextStyle(
-                              decoration: TextDecoration.underline,
-                            ),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () => launchUrl(Uri.parse(trimmedLink)),
-                          ),
-                        ],
+              child: richTextMessage != null
+                  ? Text.rich(
+                      richTextMessage!,
+                      style: TextStyle(
+                        color: textColor,
+                        decorationColor: textColor,
                       ),
                     )
-                  : Text(
-                      message,
-                      style: TextStyle(color: _getTextColor(context)),
-                    ),
+                  : Text(message!, style: TextStyle(color: textColor)),
             ),
           ],
         ),
