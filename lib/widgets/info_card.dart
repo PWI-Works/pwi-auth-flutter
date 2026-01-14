@@ -33,8 +33,11 @@ enum InfoCardDisplayType {
 /// The [InfoCard] widget displays a card with a message and an icon. The appearance
 /// of the card can be customized using the [useStandardCardMargin] and [displayType] properties.
 class InfoCard extends StatelessWidget {
-  /// The message to display inside the card.
-  final String message;
+  /// The plain text message to display inside the card.
+  final String? message;
+
+  /// The rich text message to display inside the card.
+  final InlineSpan? richTextMessage;
 
   /// Whether to use the standard margin for the card.
   ///
@@ -51,20 +54,26 @@ class InfoCard extends StatelessWidget {
 
   /// Creates an [InfoCard] widget.
   ///
-  /// The [message] parameter is required. The [useStandardCardMargin] parameter defaults
+  /// Provide either [message] or [richTextMessage]. The [useStandardCardMargin] parameter defaults
   /// to false, and the [displayType] parameter defaults to [InfoCardDisplayType.normal].
   /// The [icon] parameter is optional and can be used to override the default icon. If not provided,
   /// the icon will be determined based on the [displayType].
   const InfoCard({
     super.key,
-    required this.message,
+    this.message,
+    this.richTextMessage,
     this.useStandardCardMargin = false,
     this.displayType = InfoCardDisplayType.normal,
     this.icon,
-  });
+  }) : assert(
+          message != null || richTextMessage != null,
+          'Provide either message or richTextMessage.',
+        );
 
   @override
   Widget build(BuildContext context) {
+    final textColor = _getTextColor(context);
+
     return Card(
       margin: useStandardCardMargin ? null : EdgeInsets.zero,
       elevation: 0,
@@ -75,18 +84,18 @@ class InfoCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(
-              _icon,
-              color: _getTextColor(context),
-            ),
+            Icon(_icon, color: textColor),
             const SizedBox(width: 8),
             Flexible(
-              child: Text(
-                message,
-                style: TextStyle(
-                  color: _getTextColor(context),
-                ),
-              ),
+              child: richTextMessage != null
+                  ? Text.rich(
+                      richTextMessage!,
+                      style: TextStyle(
+                        color: textColor,
+                        decorationColor: textColor,
+                      ),
+                    )
+                  : Text(message!, style: TextStyle(color: textColor)),
             ),
           ],
         ),
