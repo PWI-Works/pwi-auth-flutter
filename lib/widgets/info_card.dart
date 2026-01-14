@@ -84,7 +84,7 @@ class InfoCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(_icon, color: _getTextColor(context)),
+            Icon(_icon, color: textColor),
             const SizedBox(width: 8),
             Flexible(
               child: richTextMessage != null
