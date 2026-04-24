@@ -27,7 +27,7 @@ class Employee {
   final String fullNameByLastName;
 
   /// ID of the employee's supervisor
-  final String supervisorId;
+  String get supervisorId => supervisor?.id ?? '';
 
   /// Firestore reference to the supervisor's document
   final DocumentReference? supervisor;
@@ -64,7 +64,6 @@ class Employee {
     required this.lastName,
     required this.preferredName,
     required this.fullNameByLastName,
-    required this.supervisorId,
     this.supervisor,
     required this.seniority,
     required this.jobTitle,
@@ -105,17 +104,7 @@ class Employee {
       }
       return defaultValue; // Return default value if key is missing or value is null
     }
-
-    // Initialize supervisor reference if available
-    // Initialize supervisor reference if available
-    DocumentReference? supervisor;
-    if (data['supervisor'] is List) {
-      final supervisorList = data['supervisor'] as List;
-      if (supervisorList.isNotEmpty &&
-          supervisorList.first is DocumentReference) {
-        supervisor = supervisorList.first as DocumentReference;
-      }
-    }
+    
 
     return Employee._(
       id: doc.id,
@@ -123,8 +112,7 @@ class Employee {
       lastName: getString('lastName'),
       preferredName: getString('preferredName'),
       fullNameByLastName: getString('fullNameByLastname'),
-      supervisorId: supervisor?.id ?? '',
-      supervisor: supervisor,
+      supervisor: data['supervisor'] as DocumentReference?,
       seniority: getString('seniorityString'),
       jobTitle: getString('jobTitleString', '-'),
       department: getString('departmentString', '-'),
