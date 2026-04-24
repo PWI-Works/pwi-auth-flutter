@@ -7,11 +7,25 @@ jobs:
     if: "${{ github.event.head_commit.message != 'chore: publish deployment artifacts' }}"
     runs-on: ubuntu-latest
     steps:
+      - name: Validate GitHub App credentials
+        env:
+          APP_ID: ${{ secrets.MODIFY_CODE_BOT_ID || vars.MODIFY_CODE_BOT_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.MODIFY_CODE_BOT_PRIVATE_KEY }}
+        run: |
+          if [ -z "$APP_ID" ]; then
+            echo "Missing GitHub App ID. Set secrets.MODIFY_CODE_BOT_ID (or vars.MODIFY_CODE_BOT_ID)." >&2
+            exit 1
+          fi
+          if [ -z "$APP_PRIVATE_KEY" ]; then
+            echo "Missing GitHub App private key. Set secrets.MODIFY_CODE_BOT_PRIVATE_KEY." >&2
+            exit 1
+          fi
+
       - name: Generate GitHub App token
         id: app-token
         uses: actions/create-github-app-token@v2
         with:
-          app-id: ${{ secrets.MODIFY_CODE_BOT_ID }}
+          app-id: ${{ secrets.MODIFY_CODE_BOT_ID || vars.MODIFY_CODE_BOT_ID }}
           private-key: ${{ secrets.MODIFY_CODE_BOT_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
 
