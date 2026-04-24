@@ -20,7 +20,7 @@ class EmployeeService implements EmployeeServiceInterface {
   static EmployeeService get instance => EmployeeService();
 
   // Reference to the Firestore collection for employees
-  final CollectionReference _employeeCollection;
+  final CollectionReference<Map<String, dynamic>> _employeeCollection;
 
   /// Streams real-time updates of employees, excluding those with employeeType "Shared Device"
   /// and filtering out employees whose preferredName contains "test".

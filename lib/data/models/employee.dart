@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pwi_auth/data/models/color_set.dart';
+import 'package:pwi_auth/data/models/job_title.dart';
 import 'package:pwi_auth/semantic_colors.dart';
 
 /// Represents an employee with various attributes.
@@ -26,17 +27,17 @@ class Employee {
   /// Employee's full name by last name
   final String fullNameByLastName;
 
-  /// ID of the employee's supervisor
-  final String supervisorId;
-
   /// Firestore reference to the supervisor's document
-  final DocumentReference? supervisor;
+  final DocumentReference<Employee>? supervisor;
+
+  /// ID of the employee's supervisor
+  String get supervisorId => supervisor?.id ?? '';
 
   /// String representing the employee's seniority level
   final String seniority;
 
-  /// String representing the employee's job title
-  final String jobTitle;
+  /// Firestore reference to the employee's job title document
+  final DocumentReference<JobTitle>? jobTitle;
 
   /// String representing the employee's department
   final String department;
@@ -64,10 +65,9 @@ class Employee {
     required this.lastName,
     required this.preferredName,
     required this.fullNameByLastName,
-    required this.supervisorId,
     this.supervisor,
     required this.seniority,
-    required this.jobTitle,
+    this.jobTitle,
     required this.department,
     this.employeeType,
     required this.startDate,
@@ -106,16 +106,8 @@ class Employee {
       return defaultValue; // Return default value if key is missing or value is null
     }
 
-    // Initialize supervisor reference if available
-    // Initialize supervisor reference if available
-    DocumentReference? supervisor;
-    if (data['supervisor'] is List) {
-      final supervisorList = data['supervisor'] as List;
-      if (supervisorList.isNotEmpty &&
-          supervisorList.first is DocumentReference) {
-        supervisor = supervisorList.first as DocumentReference;
-      }
-    }
+    final supervisor = _employeeReferenceFrom(data['supervisor']);
+    final jobTitle = _jobTitleReferenceFrom(data['jobTitle']);
 
     return Employee._(
       id: doc.id,
@@ -123,10 +115,9 @@ class Employee {
       lastName: getString('lastName'),
       preferredName: getString('preferredName'),
       fullNameByLastName: getString('fullNameByLastname'),
-      supervisorId: supervisor?.id ?? '',
       supervisor: supervisor,
       seniority: getString('seniorityString'),
-      jobTitle: getString('jobTitleString', '-'),
+      jobTitle: jobTitle,
       department: getString('departmentString', '-'),
       employeeType: getString('employeeType'),
       startDate: (() {
@@ -147,6 +138,60 @@ class Employee {
       })(),
       isActive: getString('employmentStatus').toLowerCase() == 'active',
     );
+  }
+
+  static DocumentReference<Employee>? _employeeReferenceFrom(Object? value) {
+    if (value == null) {
+      return null;
+    }
+
+    if (value is DocumentReference<Employee>) {
+      return value;
+    }
+
+    if (value is DocumentReference) {
+      return value.withConverter<Employee>(
+        fromFirestore: (snapshot, _) => Employee.fromFirestore(snapshot),
+        toFirestore: (_, __) => throw UnsupportedError(
+          'Employee model does not support Firestore writes.',
+        ),
+      );
+    }
+
+    // Backward compatibility for the previous DTO shape where supervisor was
+    // stored as a one-item list of document references.
+    if (value is List && value.isNotEmpty) {
+      return _employeeReferenceFrom(value.first);
+    }
+
+    return null;
+  }
+
+  static DocumentReference<JobTitle>? _jobTitleReferenceFrom(Object? value) {
+    if (value == null) {
+      return null;
+    }
+
+    if (value is DocumentReference<JobTitle>) {
+      return value;
+    }
+
+    if (value is DocumentReference) {
+      return value.withConverter<JobTitle>(
+        fromFirestore: JobTitle.fromFirestore,
+        toFirestore: (_, __) => throw UnsupportedError(
+          'JobTitle model does not support Firestore writes.',
+        ),
+      );
+    }
+
+    // Backward compatibility for the previous DTO shape where references were
+    // occasionally stored as one-item lists.
+    if (value is List && value.isNotEmpty) {
+      return _jobTitleReferenceFrom(value.first);
+    }
+
+    return null;
   }
 
   /// Gets the initials from the preferred name.

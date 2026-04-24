@@ -15,10 +15,10 @@ class UserService implements UserServiceInterface {
   final bool _useEmulators;
 
   /// Reference to the users collection in Firestore.
-  late final CollectionReference _usersCollection;
+  late final CollectionReference<Map<String, dynamic>> _usersCollection;
 
   /// Reference to the employees collection in Firestore.
-  late final CollectionReference _employeesCollection;
+  late final CollectionReference<Map<String, dynamic>> _employeesCollection;
 
   /// Creates a new instance of [UserService].
   ///

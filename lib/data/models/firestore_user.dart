@@ -1,6 +1,7 @@
 // lib/models/firestore_user.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pwi_auth/data/models/employee.dart';
 
 /// Model class representing a user in Firestore.
 class FirestoreUser {
@@ -8,7 +9,7 @@ class FirestoreUser {
   final String id;
 
   /// Reference to the employee document in Firestore.
-  final DocumentReference employeeRef;
+  final DocumentReference<Employee> employeeRef;
 
   /// Constructs a [FirestoreUser] instance.
   ///
@@ -28,7 +29,24 @@ class FirestoreUser {
 
     return FirestoreUser(
       id: doc.id,
-      employeeRef: data['employeeRef'] as DocumentReference,
+      employeeRef: _employeeReferenceFrom(data['employeeRef']),
     );
+  }
+
+  static DocumentReference<Employee> _employeeReferenceFrom(Object? value) {
+    if (value is DocumentReference<Employee>) {
+      return value;
+    }
+
+    if (value is DocumentReference) {
+      return value.withConverter<Employee>(
+        fromFirestore: (snapshot, _) => Employee.fromFirestore(snapshot),
+        toFirestore: (_, __) => throw UnsupportedError(
+          'Employee model does not support Firestore writes.',
+        ),
+      );
+    }
+
+    throw StateError('Firestore user is missing a valid employeeRef.');
   }
 }
