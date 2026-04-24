@@ -4,9 +4,22 @@ on:
     branches: [ main ]
 jobs:
   increment-version:
+    if: ${{ github.event.head_commit.message != 'chore: publish deployment artifacts' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.MODIFY_CODE_BOT_ID }}
+          private-key: ${{ secrets.MODIFY_CODE_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: false
       - name: Increment patch version
         run: |
           old_version=$(grep '^version:' pubspec.yaml | sed 's/version: //')
@@ -14,13 +27,19 @@ jobs:
           new_patch=$((patch+1))
           new_version="$major.$minor.$new_patch"
           sed -i "s/version: .*/version: $new_version/g" pubspec.yaml
-      - name: Commit changes
+      - name: Configure git user
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
+
+      - name: Commit and push changes with GitHub App token
+        env:
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          git remote set-url origin "https://x-access-token:${APP_TOKEN}@github.com/${{ github.repository }}.git"
           git add pubspec.yaml
-          git commit -m "Increment patch version"
-          git push
+          git commit -m "chore: publish deployment artifacts"
+          git push origin HEAD:${{ github.ref_name }}
 
       - name: Notify External Webhook
         env:
