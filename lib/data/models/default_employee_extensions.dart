@@ -25,7 +25,7 @@ extension DefaultEmployeeExtensions on Employee {
   /// True when the employee holds an executive-level role.
   bool get isExecutive =>
       seniority.toLowerCase().contains('red') ||
-      (jobTitle?.id.toLowerCase().contains('chief') ?? false);
+      jobTitle.toLowerCase().contains('chief');
 
   /// True when the employee belongs to the software department.
   bool get isDeveloper => department.toLowerCase().contains('software');
