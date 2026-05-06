@@ -24,6 +24,7 @@ abstract class PwiAuthBase {
   Future<void> signOut();
   Future<void> signIn({required String email, required String password});
   Future<void> signInWithGoogle();
+  Future<void> signInWithMicrosoft();
   Future<void> signUp({
     required String email,
     required String password,
@@ -361,6 +362,24 @@ class PwiAuth extends PwiAuthBase {
     } catch (e) {
       log(e.toString());
       throw "Error signing in with Google. Try again later";
+    }
+  }
+
+  /// Signs in a user using Microsoft authentication.
+  ///
+  /// Throws an [Exception] if sign-in fails.
+  @override
+  Future<void> signInWithMicrosoft() async {
+    try {
+      final provider = OAuthProvider('microsoft.com');
+      final userCredential = await _auth.signInWithPopup(provider);
+      if (!appUsesFirebaseAuth && useSessionCookie) {
+        final idToken = await userCredential.user?.getIdToken(true);
+        await _setSessionCookie(idToken!);
+      }
+    } catch (e) {
+      log(e.toString());
+      throw "Error signing in with Microsoft. Try again later";
     }
   }
 
