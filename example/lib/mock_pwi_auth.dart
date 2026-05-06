@@ -93,6 +93,9 @@ class MockPwiAuth extends PwiAuthBase {
   Future<void> signInWithGoogle() async => setSignedIn(value: true);
 
   @override
+  Future<void> signInWithMicrosoft() async => setSignedIn(value: true);
+
+  @override
   Future<void> signUp({
     required String email,
     required String password,
