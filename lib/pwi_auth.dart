@@ -347,13 +347,9 @@ class PwiAuth extends PwiAuthBase {
     }
   }
 
-  /// Signs in a user using Google authentication.
-  ///
-  /// Throws an [Exception] if sign-in fails.
-  @override
-  Future<void> signInWithGoogle() async {
+  Future<void> _signInWithProvider(
+      AuthProvider provider, String errorMessage) async {
     try {
-      final provider = GoogleAuthProvider();
       final userCredential = await _auth.signInWithPopup(provider);
       if (!appUsesFirebaseAuth && useSessionCookie) {
         final idToken = await userCredential.user?.getIdToken(true);
@@ -361,8 +357,19 @@ class PwiAuth extends PwiAuthBase {
       }
     } catch (e) {
       log(e.toString());
-      throw "Error signing in with Google. Try again later";
+      throw errorMessage;
     }
+  }
+
+  /// Signs in a user using Google authentication.
+  ///
+  /// Throws an [Exception] if sign-in fails.
+  @override
+  Future<void> signInWithGoogle() async {
+    await _signInWithProvider(
+      GoogleAuthProvider(),
+      "Error signing in with Google. Try again later",
+    );
   }
 
   /// Signs in a user using Microsoft authentication.
@@ -370,17 +377,10 @@ class PwiAuth extends PwiAuthBase {
   /// Throws an [Exception] if sign-in fails.
   @override
   Future<void> signInWithMicrosoft() async {
-    try {
-      final provider = OAuthProvider('microsoft.com');
-      final userCredential = await _auth.signInWithPopup(provider);
-      if (!appUsesFirebaseAuth && useSessionCookie) {
-        final idToken = await userCredential.user?.getIdToken(true);
-        await _setSessionCookie(idToken!);
-      }
-    } catch (e) {
-      log(e.toString());
-      throw "Error signing in with Microsoft. Try again later";
-    }
+    await _signInWithProvider(
+      OAuthProvider('microsoft.com'),
+      "Error signing in with Microsoft. Try again later",
+    );
   }
 
   /// Creates a new user account with the given [email], [password], [firstName], and [lastName].
