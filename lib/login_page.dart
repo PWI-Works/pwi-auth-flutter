@@ -3,6 +3,7 @@ library pwi_auth;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pwi_auth/pwi_auth.dart';
 
 class LoginPage extends StatelessWidget {
@@ -53,6 +54,15 @@ class LoginPage extends StatelessWidget {
     }
   }
 
+  Future<String?> _signInWithMicrosoft() async {
+    try {
+      await auth.signInWithMicrosoft();
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
   Future<String?> _recoverPassword(String email) async {
     try {
       await auth.sendPasswordResetEmail(email);
@@ -64,7 +74,7 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final showGoogleLogin = Uri.base.host.contains('pwiworks.app') ||
+    final showSocialLogin = Uri.base.host.contains('pwiworks.app') ||
         Uri.base.host.contains('localhost');
 
     return FlutterLogin(
@@ -85,13 +95,25 @@ class LoginPage extends StatelessWidget {
             'If you already have an account with us, we\'ll send you an email to reset your password.',
         providersTitleFirst: "or",
       ),
-      loginProviders: showGoogleLogin
+      theme: LoginTheme(
+        providerButtonPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+      loginProviders: showSocialLogin
           ? <LoginProvider>[
               LoginProvider(
-                button: Buttons.google,
-                label: 'Sign in with Google',
+                icon: FontAwesomeIcons.google,
+                label: 'Google',
                 callback: () async {
                   await _signInWithGoogle();
+                  return;
+                },
+              ),
+              LoginProvider(
+                icon: FontAwesomeIcons.microsoft,
+                label: 'Microsoft',
+                callback: () async {
+                  await _signInWithMicrosoft();
                   return;
                 },
               ),
