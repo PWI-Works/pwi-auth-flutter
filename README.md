@@ -143,11 +143,6 @@ if (pwiAuth.signedIn) {
 }
 ```
 
-### Sign In with Microsoft
-
-```dart
-await pwiAuth.signInWithMicrosoft();
-```
 ---
 
 ## Methods
