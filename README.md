@@ -57,7 +57,6 @@ flutter pub get
 
 - **Firebase Project**: You need a Firebase project configured for your Flutter application.
 - **Firebase Authentication**: Enable Email/Password, Google Sign-In, and Microsoft methods in your Firebase console.
-- **Microsoft Entra ID Setup**: Configure a Microsoft OAuth application (client ID/secret and redirect URI) for Firebase Microsoft provider.
 - **Backend Endpoint**: A backend server endpoint that handles session cookies and authentication status (`_endPoint`).
 
 ## Setup
