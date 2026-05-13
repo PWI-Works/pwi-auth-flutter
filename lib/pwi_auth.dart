@@ -43,17 +43,21 @@ class PwiAuth extends PwiAuthBase {
 
   /// Indicates if native Firebase Auth should be used (disables custom streaming/session logic)
   final bool appUsesFirebaseAuth;
+  final String? microsoftTenant;
 
   /// Private constructor
   PwiAuth._({
     bool loggingEnabled = false,
     this.appUsesFirebaseAuth = false,
+    this.microsoftTenant,
   }) : useSessionCookie = !appUsesFirebaseAuth &&
             !kDebugMode &&
             kIsWeb &&
             Uri.base.host.contains('pwiworks.app') {
     enableLogs = loggingEnabled;
-    log('PwiAuth created with useSessionCookie = useSessionCookie, appUsesFirebaseAuth = $appUsesFirebaseAuth');
+    log(
+      'PwiAuth created with useSessionCookie = useSessionCookie, appUsesFirebaseAuth = $appUsesFirebaseAuth, microsoftTenant = $microsoftTenant',
+    );
     if (!appUsesFirebaseAuth) {
       _subscribeToAuthChanges();
       if (useSessionCookie) {
@@ -74,10 +78,12 @@ class PwiAuth extends PwiAuthBase {
   factory PwiAuth({
     bool loggingEnabled = false,
     bool appUsesFirebaseAuth = false,
+    String? microsoftTenant,
   }) {
     _instance ??= PwiAuth._(
       loggingEnabled: loggingEnabled,
       appUsesFirebaseAuth: appUsesFirebaseAuth,
+      microsoftTenant: microsoftTenant,
     );
     return _instance!;
   }
@@ -347,18 +353,60 @@ class PwiAuth extends PwiAuthBase {
     }
   }
 
-  Future<void> _signInWithProvider(
-      AuthProvider provider, String errorMessage) async {
-    try {
-      final userCredential = await _auth.signInWithPopup(provider);
-      if (!appUsesFirebaseAuth && useSessionCookie) {
-        final idToken = await userCredential.user?.getIdToken(true);
-        await _setSessionCookie(idToken!);
-      }
-    } catch (e) {
-      log(e.toString());
-      throw errorMessage;
+  Future<void> _handleAccountExistsWithDifferentCredential({
+    required FirebaseAuthException error,
+    required AuthProvider attemptedProvider,
+  }) async {
+    final pendingCredential = error.credential;
+    final email = error.email;
+
+    if (pendingCredential == null || email == null || email.trim().isEmpty) {
+      throw 'An account already exists with this email but could not be linked automatically. '
+          'Please sign in using your existing method first, then try Microsoft again.';
     }
+
+    final normalizedEmail = email.trim().toLowerCase();
+    log('Account collision for $normalizedEmail. Attempting automatic linking.');
+
+    try {
+      final existingAccount = await _auth.signInWithPopup(GoogleAuthProvider());
+      final currentUser = existingAccount.user;
+      final matchedEmail = currentUser?.email?.trim().toLowerCase();
+      if (currentUser == null || matchedEmail != normalizedEmail) {
+        if (_auth.currentUser != null) {
+          await _auth.signOut();
+        }
+        throw 'Google sign-in returned a different account than the one being linked.';
+      }
+
+      try {
+        await currentUser.linkWithCredential(pendingCredential);
+        log('Linked pending credential to existing Google account.');
+      } on FirebaseAuthException catch (linkError) {
+        if (linkError.code == 'invalid-credential-or-provider-id') {
+          log(
+            'linkWithCredential failed for ${attemptedProvider.providerId}; retrying with linkWithPopup.',
+          );
+          await currentUser.linkWithPopup(attemptedProvider);
+          log('Linked provider using linkWithPopup fallback.');
+        } else {
+          rethrow;
+        }
+      }
+
+      if (!appUsesFirebaseAuth && useSessionCookie) {
+        final idToken = await currentUser.getIdToken(true);
+        if (idToken != null) {
+          await _setSessionCookie(idToken);
+        }
+      }
+      return;
+    } on FirebaseAuthException catch (e) {
+      log('Automatic Google linking failed: ${e.code}: ${e.message}');
+    }
+
+    throw 'An account for $normalizedEmail already exists with a different sign-in method. '
+        'Sign in with your existing method first, then link Microsoft from your account.';
   }
 
   /// Signs in a user using Google authentication.
@@ -366,10 +414,17 @@ class PwiAuth extends PwiAuthBase {
   /// Throws an [Exception] if sign-in fails.
   @override
   Future<void> signInWithGoogle() async {
-    await _signInWithProvider(
-      GoogleAuthProvider(),
-      "Error signing in with Google. Try again later",
-    );
+    try {
+      final provider = GoogleAuthProvider();
+      final userCredential = await _auth.signInWithPopup(provider);
+      if (!appUsesFirebaseAuth && useSessionCookie) {
+        final idToken = await userCredential.user?.getIdToken(true);
+        await _setSessionCookie(idToken!);
+      }
+    } catch (e) {
+      log(e.toString());
+      throw "Error signing in with Google. Try again later";
+    }
   }
 
   /// Signs in a user using Microsoft authentication.
@@ -377,10 +432,33 @@ class PwiAuth extends PwiAuthBase {
   /// Throws an [Exception] if sign-in fails.
   @override
   Future<void> signInWithMicrosoft() async {
-    await _signInWithProvider(
-      OAuthProvider('microsoft.com'),
-      "Error signing in with Microsoft. Try again later",
-    );
+    final provider = OAuthProvider('microsoft.com');
+    final tenant = microsoftTenant?.trim();
+    if (tenant != null && tenant.isNotEmpty) {
+      provider.setCustomParameters({'tenant': tenant});
+      log('Using Microsoft tenant override: $tenant');
+    }
+
+    try {
+      final userCredential = await _auth.signInWithPopup(provider);
+      if (!appUsesFirebaseAuth && useSessionCookie) {
+        final idToken = await userCredential.user?.getIdToken(true);
+        await _setSessionCookie(idToken!);
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'account-exists-with-different-credential') {
+        await _handleAccountExistsWithDifferentCredential(
+          error: e,
+          attemptedProvider: provider,
+        );
+        return;
+      }
+      log('${e.code}: ${e.message}');
+      throw "Error signing in with Microsoft. Try again later";
+    } catch (e) {
+      log(e.toString());
+      throw "Error signing in with Microsoft. Try again later";
+    }
   }
 
   /// Creates a new user account with the given [email], [password], [firstName], and [lastName].
