@@ -117,6 +117,7 @@ class PwiAuth extends PwiAuthBase {
   bool get authStatusChecked => _authStatusChecked;
   static bool _forceCheckingAuth = false;
   bool _isSigningIn = false;
+  bool _hasPendingMicrosoftLink = false;
 
   /// Forces a check of the authentication status by attempting to sign in with a session cookie.
   ///
@@ -283,6 +284,7 @@ class PwiAuth extends PwiAuthBase {
   /// Signs out the current user and clears the session cookie.
   @override
   Future<void> signOut() async {
+    _hasPendingMicrosoftLink = false;
     if (appUsesFirebaseAuth) {
       await _auth.signOut();
       return;
@@ -331,6 +333,7 @@ class PwiAuth extends PwiAuthBase {
     try {
       final userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
+      await _updatePendingMicrosoftCredentialLink(userCredential.user);
       if (!appUsesFirebaseAuth && useSessionCookie) {
         final idToken = await userCredential.user?.getIdToken(true);
         await _setSessionCookie(idToken!);
@@ -355,8 +358,11 @@ class PwiAuth extends PwiAuthBase {
 
   Future<void> _handleAccountExistsWithDifferentCredential({
     required FirebaseAuthException error,
-    required AuthProvider attemptedProvider,
   }) async {
+    log(
+      'Microsoft collision received: code=${error.code}, email=${error.email}, '
+      'hasCredential=${error.credential != null}',
+    );
     final pendingCredential = error.credential;
     final email = error.email;
 
@@ -366,47 +372,42 @@ class PwiAuth extends PwiAuthBase {
     }
 
     final normalizedEmail = email.trim().toLowerCase();
-    log('Account collision for $normalizedEmail. Attempting automatic linking.');
+    log('Account collision for $normalizedEmail.');
+
+    _hasPendingMicrosoftLink = true;
+
+    throw 'This email ($normalizedEmail) is already registered. '
+        'Please sign in with your existing email and password, or with Google. '
+        'Microsoft will be linked to your account automatically.';
+  }
+
+  /// Links a pending Microsoft credential to the current signed-in [user].
+  /// No-op if no pending credential exists or [user] is null.
+  Future<void> _updatePendingMicrosoftCredentialLink(User? user) async {
+    if (!_hasPendingMicrosoftLink || user == null) return;
 
     try {
-      final existingAccount = await _auth.signInWithPopup(GoogleAuthProvider());
-      final currentUser = existingAccount.user;
-      final matchedEmail = currentUser?.email?.trim().toLowerCase();
-      if (currentUser == null || matchedEmail != normalizedEmail) {
-        if (_auth.currentUser != null) {
-          await _auth.signOut();
-        }
-        throw 'Google sign-in returned a different account than the one being linked.';
+      final provider = OAuthProvider('microsoft.com');
+      final tenant = microsoftTenant?.trim();
+      if (tenant != null && tenant.isNotEmpty) {
+        provider.setCustomParameters({'tenant': tenant});
       }
 
-      try {
-        await currentUser.linkWithCredential(pendingCredential);
-        log('Linked pending credential to existing Google account.');
-      } on FirebaseAuthException catch (linkError) {
-        if (linkError.code == 'invalid-credential-or-provider-id') {
-          log(
-            'linkWithCredential failed for ${attemptedProvider.providerId}; retrying with linkWithPopup.',
-          );
-          await currentUser.linkWithPopup(attemptedProvider);
-          log('Linked provider using linkWithPopup fallback.');
-        } else {
-          rethrow;
-        }
-      }
+      await user.linkWithPopup(provider);
+      _hasPendingMicrosoftLink = false;
 
-      if (!appUsesFirebaseAuth && useSessionCookie) {
-        final idToken = await currentUser.getIdToken(true);
-        if (idToken != null) {
-          await _setSessionCookie(idToken);
-        }
-      }
-      return;
+      await user.reload();
     } on FirebaseAuthException catch (e) {
-      log('Automatic Google linking failed: ${e.code}: ${e.message}');
-    }
+      if (e.code == 'provider-already-linked' ||
+          e.code == 'credential-already-in-use') {
+        _hasPendingMicrosoftLink = false;
+        return;
+      }
 
-    throw 'An account for $normalizedEmail already exists with a different sign-in method. '
-        'Sign in with your existing method first, then link Microsoft from your account.';
+      log(
+        'Failed to link pending Microsoft provider: ${e.code}: ${e.message}',
+      );
+    }
   }
 
   /// Signs in a user using Google authentication.
@@ -417,6 +418,7 @@ class PwiAuth extends PwiAuthBase {
     try {
       final provider = GoogleAuthProvider();
       final userCredential = await _auth.signInWithPopup(provider);
+      await _updatePendingMicrosoftCredentialLink(userCredential.user);
       if (!appUsesFirebaseAuth && useSessionCookie) {
         final idToken = await userCredential.user?.getIdToken(true);
         await _setSessionCookie(idToken!);
@@ -447,10 +449,7 @@ class PwiAuth extends PwiAuthBase {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'account-exists-with-different-credential') {
-        await _handleAccountExistsWithDifferentCredential(
-          error: e,
-          attemptedProvider: provider,
-        );
+        await _handleAccountExistsWithDifferentCredential(error: e);
         return;
       }
       log('${e.code}: ${e.message}');
