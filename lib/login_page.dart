@@ -92,18 +92,12 @@ class LoginPage extends StatelessWidget {
               LoginProvider(
                 icon: FontAwesomeIcons.google,
                 label: 'Google',
-                callback: () async {
-                  await _signInWithGoogle();
-                  return;
-                },
+                callback: () => _signInWithGoogle(),
               ),
               LoginProvider(
                 icon: FontAwesomeIcons.microsoft,
                 label: 'Microsoft',
-                callback: () async {
-                  await _signInWithMicrosoft();
-                  return;
-                },
+                callback: () => _signInWithMicrosoft(),
               ),
             ]
           : [],
