@@ -43,20 +43,18 @@ class PwiAuth extends PwiAuthBase {
 
   /// Indicates if native Firebase Auth should be used (disables custom streaming/session logic)
   final bool appUsesFirebaseAuth;
-  final String? microsoftTenant;
 
   /// Private constructor
   PwiAuth._({
     bool loggingEnabled = false,
     this.appUsesFirebaseAuth = false,
-    this.microsoftTenant,
   }) : useSessionCookie = !appUsesFirebaseAuth &&
             !kDebugMode &&
             kIsWeb &&
             Uri.base.host.contains('pwiworks.app') {
     enableLogs = loggingEnabled;
     log(
-      'PwiAuth created with useSessionCookie = useSessionCookie, appUsesFirebaseAuth = $appUsesFirebaseAuth, microsoftTenant = $microsoftTenant',
+      'PwiAuth created with useSessionCookie = useSessionCookie, appUsesFirebaseAuth = $appUsesFirebaseAuth',
     );
     if (!appUsesFirebaseAuth) {
       _subscribeToAuthChanges();
@@ -78,18 +76,18 @@ class PwiAuth extends PwiAuthBase {
   factory PwiAuth({
     bool loggingEnabled = false,
     bool appUsesFirebaseAuth = false,
-    String? microsoftTenant,
   }) {
     _instance ??= PwiAuth._(
       loggingEnabled: loggingEnabled,
       appUsesFirebaseAuth: appUsesFirebaseAuth,
-      microsoftTenant: microsoftTenant,
     );
     return _instance!;
   }
 
   // #endregion
   static const String _notSignedInMessage = "not-signed-in";
+  static const String _microsoftTenantId =
+      '731a5963-b7c3-4d2c-8081-d10e4b63077d';
 
   // Private variables
   final String _endPoint = 'auth.pwiworks.app';
@@ -387,13 +385,7 @@ class PwiAuth extends PwiAuthBase {
     if (!_hasPendingMicrosoftLink || user == null) return;
 
     try {
-      final provider = OAuthProvider('microsoft.com');
-      final tenant = microsoftTenant?.trim();
-      if (tenant != null && tenant.isNotEmpty) {
-        provider.setCustomParameters({'tenant': tenant});
-      }
-
-      await user.linkWithPopup(provider);
+      await user.linkWithPopup(_createMicrosoftProvider());
       _hasPendingMicrosoftLink = false;
 
       await user.reload();
@@ -408,6 +400,11 @@ class PwiAuth extends PwiAuthBase {
         'Failed to link pending Microsoft provider: ${e.code}: ${e.message}',
       );
     }
+  }
+
+  OAuthProvider _createMicrosoftProvider() {
+    return OAuthProvider('microsoft.com')
+      ..setCustomParameters({'tenant': _microsoftTenantId});
   }
 
   /// Signs in a user using Google authentication.
@@ -434,12 +431,7 @@ class PwiAuth extends PwiAuthBase {
   /// Throws an [Exception] if sign-in fails.
   @override
   Future<void> signInWithMicrosoft() async {
-    final provider = OAuthProvider('microsoft.com');
-    final tenant = microsoftTenant?.trim();
-    if (tenant != null && tenant.isNotEmpty) {
-      provider.setCustomParameters({'tenant': tenant});
-      log('Using Microsoft tenant override: $tenant');
-    }
+    final provider = _createMicrosoftProvider();
 
     try {
       final userCredential = await _auth.signInWithPopup(provider);
