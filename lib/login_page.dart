@@ -48,10 +48,6 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Future<String?> _signInWithGoogle() async {
-    return _runAuthAction(auth.signInWithGoogle);
-  }
-
   Future<String?> _signInWithMicrosoft() async {
     return _runAuthAction(auth.signInWithMicrosoft);
   }
@@ -89,11 +85,6 @@ class LoginPage extends StatelessWidget {
       ),
       loginProviders: showSocialLogin
           ? <LoginProvider>[
-              LoginProvider(
-                icon: FontAwesomeIcons.google,
-                label: 'Google',
-                callback: () => _signInWithGoogle(),
-              ),
               LoginProvider(
                 icon: FontAwesomeIcons.microsoft,
                 label: 'Microsoft',
