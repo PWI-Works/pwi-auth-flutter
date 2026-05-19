@@ -24,6 +24,7 @@ abstract class PwiAuthBase {
   Future<void> signOut();
   Future<void> signIn({required String email, required String password});
   Future<void> signInWithGoogle();
+  Future<void> signInWithMicrosoft();
   Future<void> signUp({
     required String email,
     required String password,
@@ -52,7 +53,9 @@ class PwiAuth extends PwiAuthBase {
             kIsWeb &&
             Uri.base.host.contains('pwiworks.app') {
     enableLogs = loggingEnabled;
-    log('PwiAuth created with useSessionCookie = useSessionCookie, appUsesFirebaseAuth = $appUsesFirebaseAuth');
+    log(
+      'PwiAuth created with useSessionCookie = useSessionCookie, appUsesFirebaseAuth = $appUsesFirebaseAuth',
+    );
     if (!appUsesFirebaseAuth) {
       _subscribeToAuthChanges();
       if (useSessionCookie) {
@@ -83,6 +86,8 @@ class PwiAuth extends PwiAuthBase {
 
   // #endregion
   static const String _notSignedInMessage = "not-signed-in";
+  static const String _microsoftTenantId =
+      '731a5963-b7c3-4d2c-8081-d10e4b63077d';
 
   // Private variables
   final String _endPoint = 'auth.pwiworks.app';
@@ -110,6 +115,7 @@ class PwiAuth extends PwiAuthBase {
   bool get authStatusChecked => _authStatusChecked;
   static bool _forceCheckingAuth = false;
   bool _isSigningIn = false;
+  bool _hasPendingMicrosoftLink = false;
 
   /// Forces a check of the authentication status by attempting to sign in with a session cookie.
   ///
@@ -276,6 +282,7 @@ class PwiAuth extends PwiAuthBase {
   /// Signs out the current user and clears the session cookie.
   @override
   Future<void> signOut() async {
+    _hasPendingMicrosoftLink = false;
     if (appUsesFirebaseAuth) {
       await _auth.signOut();
       return;
@@ -324,6 +331,7 @@ class PwiAuth extends PwiAuthBase {
     try {
       final userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
+      await _updatePendingMicrosoftCredentialLink(userCredential.user);
       if (!appUsesFirebaseAuth && useSessionCookie) {
         final idToken = await userCredential.user?.getIdToken(true);
         await _setSessionCookie(idToken!);
@@ -346,6 +354,59 @@ class PwiAuth extends PwiAuthBase {
     }
   }
 
+  Future<void> _handleAccountExistsWithDifferentCredential({
+    required FirebaseAuthException error,
+  }) async {
+    log(
+      'Microsoft collision received: code=${error.code}, email=${error.email}, '
+      'hasCredential=${error.credential != null}',
+    );
+    final pendingCredential = error.credential;
+    final email = error.email;
+
+    if (pendingCredential == null || email == null || email.trim().isEmpty) {
+      throw 'An account already exists with this email but could not be linked automatically. '
+          'Please sign in using your existing method first, then try Microsoft again.';
+    }
+
+    final normalizedEmail = email.trim().toLowerCase();
+    log('Account collision for $normalizedEmail.');
+
+    _hasPendingMicrosoftLink = true;
+
+    throw 'This email ($normalizedEmail) is already registered. '
+        'Please sign in with your existing email and password, or with Google. '
+        'Microsoft will be linked to your account automatically.';
+  }
+
+  /// Links a pending Microsoft credential to the current signed-in [user].
+  /// No-op if no pending credential exists or [user] is null.
+  Future<void> _updatePendingMicrosoftCredentialLink(User? user) async {
+    if (!_hasPendingMicrosoftLink || user == null) return;
+
+    try {
+      await user.linkWithPopup(_createMicrosoftProvider());
+      _hasPendingMicrosoftLink = false;
+
+      await user.reload();
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'provider-already-linked' ||
+          e.code == 'credential-already-in-use') {
+        _hasPendingMicrosoftLink = false;
+        return;
+      }
+
+      log(
+        'Failed to link pending Microsoft provider: ${e.code}: ${e.message}',
+      );
+    }
+  }
+
+  OAuthProvider _createMicrosoftProvider() {
+    return OAuthProvider('microsoft.com')
+      ..setCustomParameters({'tenant': _microsoftTenantId});
+  }
+
   /// Signs in a user using Google authentication.
   ///
   /// Throws an [Exception] if sign-in fails.
@@ -354,6 +415,7 @@ class PwiAuth extends PwiAuthBase {
     try {
       final provider = GoogleAuthProvider();
       final userCredential = await _auth.signInWithPopup(provider);
+      await _updatePendingMicrosoftCredentialLink(userCredential.user);
       if (!appUsesFirebaseAuth && useSessionCookie) {
         final idToken = await userCredential.user?.getIdToken(true);
         await _setSessionCookie(idToken!);
@@ -361,6 +423,32 @@ class PwiAuth extends PwiAuthBase {
     } catch (e) {
       log(e.toString());
       throw "Error signing in with Google. Try again later";
+    }
+  }
+
+  /// Signs in a user using Microsoft authentication.
+  ///
+  /// Throws an [Exception] if sign-in fails.
+  @override
+  Future<void> signInWithMicrosoft() async {
+    final provider = _createMicrosoftProvider();
+
+    try {
+      final userCredential = await _auth.signInWithPopup(provider);
+      if (!appUsesFirebaseAuth && useSessionCookie) {
+        final idToken = await userCredential.user?.getIdToken(true);
+        await _setSessionCookie(idToken!);
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'account-exists-with-different-credential') {
+        await _handleAccountExistsWithDifferentCredential(error: e);
+        return;
+      }
+      log('${e.code}: ${e.message}');
+      throw "Error signing in with Microsoft. Try again later";
+    } catch (e) {
+      log(e.toString());
+      throw "Error signing in with Microsoft. Try again later";
     }
   }
 

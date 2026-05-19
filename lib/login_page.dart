@@ -3,6 +3,7 @@ library pwi_auth;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pwi_auth/pwi_auth.dart';
 
 class LoginPage extends StatelessWidget {
@@ -18,13 +19,19 @@ class LoginPage extends StatelessWidget {
     required this.auth,
   });
 
-  Future<String?> _signInWithCredentials(LoginData data) async {
+  Future<String?> _runAuthAction(Future<void> Function() action) async {
     try {
-      await auth.signIn(email: data.name, password: data.password);
+      await action();
       return null;
     } catch (e) {
       return e.toString();
     }
+  }
+
+  Future<String?> _signInWithCredentials(LoginData data) async {
+    return _runAuthAction(
+      () => auth.signIn(email: data.name, password: data.password),
+    );
   }
 
   Future<String?> _signUp(SignupData data) async {
@@ -32,39 +39,30 @@ class LoginPage extends StatelessWidget {
       return Future.value('Invalid username or password');
     }
 
-    try {
-      await auth.signUp(
+    return _runAuthAction(
+      () => auth.signUp(
           email: data.name!,
           password: data.password!,
           firstName: data.additionalSignupData?["firstName"] ?? "Unknown",
-          lastName: data.additionalSignupData?["lastName"] ?? "Unknown");
-      return null;
-    } catch (e) {
-      return e.toString();
-    }
+          lastName: data.additionalSignupData?["lastName"] ?? "Unknown"),
+    );
   }
 
   Future<String?> _signInWithGoogle() async {
-    try {
-      await auth.signInWithGoogle();
-      return null;
-    } catch (e) {
-      return e.toString();
-    }
+    return _runAuthAction(auth.signInWithGoogle);
+  }
+
+  Future<String?> _signInWithMicrosoft() async {
+    return _runAuthAction(auth.signInWithMicrosoft);
   }
 
   Future<String?> _recoverPassword(String email) async {
-    try {
-      await auth.sendPasswordResetEmail(email);
-      return null;
-    } catch (e) {
-      return e.toString();
-    }
+    return _runAuthAction(() => auth.sendPasswordResetEmail(email));
   }
 
   @override
   Widget build(BuildContext context) {
-    final showGoogleLogin = Uri.base.host.contains('pwiworks.app') ||
+    final showSocialLogin = Uri.base.host.contains('pwiworks.app') ||
         Uri.base.host.contains('localhost');
 
     return FlutterLogin(
@@ -85,15 +83,21 @@ class LoginPage extends StatelessWidget {
             'If you already have an account with us, we\'ll send you an email to reset your password.',
         providersTitleFirst: "or",
       ),
-      loginProviders: showGoogleLogin
+      theme: LoginTheme(
+        providerButtonPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+      loginProviders: showSocialLogin
           ? <LoginProvider>[
               LoginProvider(
-                button: Buttons.google,
-                label: 'Sign in with Google',
-                callback: () async {
-                  await _signInWithGoogle();
-                  return;
-                },
+                icon: FontAwesomeIcons.google,
+                label: 'Google',
+                callback: () => _signInWithGoogle(),
+              ),
+              LoginProvider(
+                icon: FontAwesomeIcons.microsoft,
+                label: 'Microsoft',
+                callback: () => _signInWithMicrosoft(),
               ),
             ]
           : [],

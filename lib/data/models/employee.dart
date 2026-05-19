@@ -104,7 +104,6 @@ class Employee {
       }
       return defaultValue; // Return default value if key is missing or value is null
     }
-    
 
     return Employee._(
       id: doc.id,

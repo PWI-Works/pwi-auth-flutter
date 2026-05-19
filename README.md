@@ -6,6 +6,7 @@ PwiAuth is a Flutter package that provides authentication functionalities for th
 
 - **Email and Password Authentication**
 - **Google Sign-In Authentication**
+- **Microsoft Sign-In Authentication**
 - **Session Management with Custom Tokens**
 - **Password Reset Functionality**
 - **Authentication State Changes Stream**
@@ -55,7 +56,7 @@ flutter pub get
 ## Prerequisites
 
 - **Firebase Project**: You need a Firebase project configured for your Flutter application.
-- **Firebase Authentication**: Enable Email/Password and Google Sign-In methods in your Firebase console.
+- **Firebase Authentication**: Enable Email/Password, Google Sign-In, and Microsoft methods in your Firebase console.
 - **Backend Endpoint**: A backend server endpoint that handles session cookies and authentication status (`_endPoint`).
 
 ## Setup
@@ -68,7 +69,7 @@ Follow the official Firebase documentation to add Firebase to your Flutter app:
 
 ### 2. Configure Firebase Authentication
 
-- Enable **Email/Password** and **Google Sign-In** in your [Firebase console](https://console.firebase.google.com/).
+- Enable **Email/Password**, **Google Sign-In**, and **Microsoft** in your [Firebase console](https://console.firebase.google.com/).
 
 ### 3. Set Up Backend Endpoints
 
@@ -141,6 +142,7 @@ if (pwiAuth.signedIn) {
   print('No user is signed in');
 }
 ```
+
 ---
 
 ## Methods
@@ -152,6 +154,8 @@ if (pwiAuth.signedIn) {
 - **`Future<void> signUp({required String email, required String password, required String firstName, required String lastName})`**: Creates a new user account.
 
 - **`Future<void> signInWithGoogle()`**: Signs in a user using Google authentication.
+
+- **`Future<void> signInWithMicrosoft()`**: Signs in a user using Microsoft authentication.
 
 - **`Future<void> signOut()`**: Signs out the current user and clears the session cookie.
 
