@@ -375,8 +375,7 @@ class PwiAuth extends PwiAuthBase {
     _hasPendingMicrosoftLink = true;
 
     throw 'This email ($normalizedEmail) is already registered. '
-        'Please sign in with your existing email and password. '
-        'Microsoft will be linked to your account automatically.';
+        'Please sign in with your existing email and password.';
   }
 
   /// Links a pending Microsoft credential to the current signed-in [user].
