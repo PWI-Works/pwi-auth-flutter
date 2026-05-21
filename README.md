@@ -5,7 +5,6 @@ PwiAuth is a Flutter package that provides authentication functionalities for th
 ## Features
 
 - **Email and Password Authentication**
-- **Google Sign-In Authentication**
 - **Microsoft Sign-In Authentication**
 - **Session Management with Custom Tokens**
 - **Password Reset Functionality**
@@ -56,7 +55,7 @@ flutter pub get
 ## Prerequisites
 
 - **Firebase Project**: You need a Firebase project configured for your Flutter application.
-- **Firebase Authentication**: Enable Email/Password, Google Sign-In, and Microsoft methods in your Firebase console.
+- **Firebase Authentication**: Enable Email/Password and Microsoft methods in your Firebase console.
 - **Backend Endpoint**: A backend server endpoint that handles session cookies and authentication status (`_endPoint`).
 
 ## Setup
@@ -69,7 +68,7 @@ Follow the official Firebase documentation to add Firebase to your Flutter app:
 
 ### 2. Configure Firebase Authentication
 
-- Enable **Email/Password**, **Google Sign-In**, and **Microsoft** in your [Firebase console](https://console.firebase.google.com/).
+- Enable **Email/Password** and **Microsoft** in your [Firebase console](https://console.firebase.google.com/).
 
 ### 3. Set Up Backend Endpoints
 
@@ -152,8 +151,6 @@ if (pwiAuth.signedIn) {
 - **`Future<void> signIn({required String email, required String password})`**: Signs in a user with email and password.
 
 - **`Future<void> signUp({required String email, required String password, required String firstName, required String lastName})`**: Creates a new user account.
-
-- **`Future<void> signInWithGoogle()`**: Signs in a user using Google authentication.
 
 - **`Future<void> signInWithMicrosoft()`**: Signs in a user using Microsoft authentication.
 
