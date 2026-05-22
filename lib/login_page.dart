@@ -3,7 +3,6 @@ library pwi_auth;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pwi_auth/pwi_auth.dart';
 
 class LoginPage extends StatelessWidget {
@@ -86,8 +85,8 @@ class LoginPage extends StatelessWidget {
       loginProviders: showSocialLogin
           ? <LoginProvider>[
               LoginProvider(
-                icon: FontAwesomeIcons.microsoft,
-                label: 'Microsoft',
+                button: Buttons.microsoft,
+                label: 'Sign in with Microsoft',
                 callback: () => _signInWithMicrosoft(),
               ),
             ]
