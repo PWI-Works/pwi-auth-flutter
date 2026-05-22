@@ -115,7 +115,6 @@ class PwiAuth extends PwiAuthBase {
   bool get authStatusChecked => _authStatusChecked;
   static bool _forceCheckingAuth = false;
   bool _isSigningIn = false;
-  bool _hasPendingMicrosoftLink = false;
 
   /// Forces a check of the authentication status by attempting to sign in with a session cookie.
   ///
@@ -282,7 +281,6 @@ class PwiAuth extends PwiAuthBase {
   /// Signs out the current user and clears the session cookie.
   @override
   Future<void> signOut() async {
-    _hasPendingMicrosoftLink = false;
     if (appUsesFirebaseAuth) {
       await _auth.signOut();
       return;
@@ -308,7 +306,6 @@ class PwiAuth extends PwiAuthBase {
   ///
   /// Throws an [Exception] if setting the session cookie fails.
   Future<void> _setSessionCookie(String idToken) async {
-    if (appUsesFirebaseAuth) return;
     final client = BrowserClient()..withCredentials = true;
 
     final url = Uri.parse('https://$_endPoint/api/set-session-cookie');
@@ -322,6 +319,41 @@ class PwiAuth extends PwiAuthBase {
     }
   }
 
+  Future<void> _setSessionCookieForUser(User? user) async {
+    if (appUsesFirebaseAuth || !useSessionCookie) return;
+
+    final idToken = await user?.getIdToken(true);
+    if (idToken == null) {
+      throw Exception('missing-id-token');
+    }
+
+    await _setSessionCookie(idToken);
+  }
+
+  Future<String> _fetchMicrosoftAutoLinkCustomToken(
+      String microsoftIdToken) async {
+    final client = BrowserClient()..withCredentials = true;
+
+    final url = Uri.parse('https://$_endPoint/api/microsoft-auto-link');
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({'microsoftIdToken': microsoftIdToken});
+
+    final response = await client.post(url, headers: headers, body: body);
+
+    if (response.statusCode != 200) {
+      throw Exception('microsoft-auto-link-failed');
+    }
+
+    final responseBody = jsonDecode(response.body) as Map<String, dynamic>;
+    final customToken = responseBody['customToken'] as String?;
+
+    if (customToken == null || customToken.isEmpty) {
+      throw Exception('microsoft-auto-link-missing-custom-token');
+    }
+
+    return customToken;
+  }
+
   /// Signs in a user with the given [email] and [password].
   ///
   /// Throws an [Exception] if sign-in fails.
@@ -331,11 +363,7 @@ class PwiAuth extends PwiAuthBase {
     try {
       final userCredential = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
-      await _updatePendingMicrosoftCredentialLink(userCredential.user);
-      if (!appUsesFirebaseAuth && useSessionCookie) {
-        final idToken = await userCredential.user?.getIdToken(true);
-        await _setSessionCookie(idToken!);
-      }
+      await _setSessionCookieForUser(userCredential.user);
     } catch (e) {
       final error = e.toString();
       log(error);
@@ -354,51 +382,31 @@ class PwiAuth extends PwiAuthBase {
     }
   }
 
-  Future<void> _handleAccountExistsWithDifferentCredential({
+  Future<void> _handleMicrosoftCollision({
     required FirebaseAuthException error,
   }) async {
-    log(
-      'Microsoft collision received: code=${error.code}, email=${error.email}, '
-      'hasCredential=${error.credential != null}',
-    );
-    final pendingCredential = error.credential;
-    final email = error.email;
+    final credential = error.credential;
+    final oAuthCredential = credential is OAuthCredential ? credential : null;
+    final microsoftIdToken = oAuthCredential?.idToken;
+    final normalizedEmail = error.email?.trim().toLowerCase();
 
-    if (pendingCredential == null || email == null || email.trim().isEmpty) {
-      throw 'An account already exists with this email but could not be linked automatically. '
-          'Please sign in using your existing method first, then try Microsoft again.';
-    }
-
-    final normalizedEmail = email.trim().toLowerCase();
-    log('Account collision for $normalizedEmail.');
-
-    _hasPendingMicrosoftLink = true;
-
-    throw 'This email ($normalizedEmail) is already registered. '
-        'Please sign in with your existing email and password.';
-  }
-
-  /// Links a pending Microsoft credential to the current signed-in [user].
-  /// No-op if no pending credential exists or [user] is null.
-  Future<void> _updatePendingMicrosoftCredentialLink(User? user) async {
-    if (!_hasPendingMicrosoftLink || user == null) return;
-
-    try {
-      await user.linkWithPopup(_createMicrosoftProvider());
-      _hasPendingMicrosoftLink = false;
-
-      await user.reload();
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'provider-already-linked' ||
-          e.code == 'credential-already-in-use') {
-        _hasPendingMicrosoftLink = false;
+    if (microsoftIdToken != null && microsoftIdToken.isNotEmpty) {
+      try {
+        final customToken =
+            await _fetchMicrosoftAutoLinkCustomToken(microsoftIdToken);
+        final userCredential = await _auth.signInWithCustomToken(customToken);
+        await _setSessionCookieForUser(userCredential.user);
         return;
+      } catch (autoLinkError) {
+        log('Microsoft auto-link failed: $autoLinkError');
       }
-
-      log(
-        'Failed to link pending Microsoft provider: ${e.code}: ${e.message}',
-      );
     }
+
+    if (normalizedEmail == null || normalizedEmail.isEmpty) {
+      throw 'We could not complete Microsoft sign-in for this account. Please sign in with your existing email and password.';
+    }
+
+    throw 'We could not complete Microsoft sign-in for $normalizedEmail. Please sign in with your existing email and password.';
   }
 
   OAuthProvider _createMicrosoftProvider() {
@@ -414,11 +422,7 @@ class PwiAuth extends PwiAuthBase {
     try {
       final provider = GoogleAuthProvider();
       final userCredential = await _auth.signInWithPopup(provider);
-      await _updatePendingMicrosoftCredentialLink(userCredential.user);
-      if (!appUsesFirebaseAuth && useSessionCookie) {
-        final idToken = await userCredential.user?.getIdToken(true);
-        await _setSessionCookie(idToken!);
-      }
+      await _setSessionCookieForUser(userCredential.user);
     } catch (e) {
       log(e.toString());
       throw "Error signing in with Google. Try again later";
@@ -434,13 +438,10 @@ class PwiAuth extends PwiAuthBase {
 
     try {
       final userCredential = await _auth.signInWithPopup(provider);
-      if (!appUsesFirebaseAuth && useSessionCookie) {
-        final idToken = await userCredential.user?.getIdToken(true);
-        await _setSessionCookie(idToken!);
-      }
+      await _setSessionCookieForUser(userCredential.user);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'account-exists-with-different-credential') {
-        await _handleAccountExistsWithDifferentCredential(error: e);
+        await _handleMicrosoftCollision(error: e);
         return;
       }
       log('${e.code}: ${e.message}');
@@ -470,10 +471,7 @@ class PwiAuth extends PwiAuthBase {
         throw "error-creating-user";
       }
       await credential.user!.updateDisplayName("$firstName $lastName");
-      if (!appUsesFirebaseAuth && useSessionCookie) {
-        final idToken = await credential.user?.getIdToken(true);
-        await _setSessionCookie(idToken!);
-      }
+      await _setSessionCookieForUser(credential.user);
     } catch (e) {
       log(e.toString());
       final error = e.toString();
