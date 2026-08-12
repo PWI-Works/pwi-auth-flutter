@@ -70,7 +70,7 @@ abstract class BaseDataRepository<T> extends Model {
       }
     }
 
-    debugRepositoryMessage('adding listener to data stream.');
+    debugRepositoryMessage('adding listener to data source.');
     // Existing retained data is delivered immediately. If a newly started
     // source emitted synchronously, the ValueNotifier already invoked this
     // listener, so do not invoke it a second time.
