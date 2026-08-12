@@ -139,6 +139,11 @@ repository, resetting also replaces the pending timer: the next automatic fetch
 waits the full `numberOfMinutes` interval after the replacement fetch completes.
 Daily repositories recalculate their next configured wall-clock time.
 
+Fetch failures are contained by the repository so background attempts do not
+become uncaught asynchronous errors. Override `onFetchError(error, stackTrace)`
+to send failures to application logging or monitoring. Failed refreshes retain
+the last successful value and do not disable later scheduled attempts.
+
 Import these APIs from
 `package:pwi_auth/data/repositories/base_data_stream_repository.dart` or
 `package:pwi_auth/data/repositories/base_data_fetch_repository.dart`.

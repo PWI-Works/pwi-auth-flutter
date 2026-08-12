@@ -27,6 +27,16 @@ class _SynchronouslyEmittingRepository extends BaseDataStreamRepository<int> {
   }
 }
 
+class _ResettingStreamRepository extends BaseDataStreamRepository<int> {
+  int starts = 0;
+
+  @override
+  StreamSubscription<int> createDataStream() {
+    starts++;
+    return const Stream<int>.empty().listen((_) {});
+  }
+}
+
 class _FetchRepository extends BaseDataFetchRepository<List<int>> {
   _FetchRepository.daily()
       : super(
@@ -43,11 +53,27 @@ class _FetchRepository extends BaseDataFetchRepository<List<int>> {
   _FetchRepository.never() : super(refreshSchedule: DataRefreshSchedule.never);
 
   int fetchCount = 0;
+  Object? fetchError;
+  StackTrace? fetchStackTrace;
+  bool failNextFetch = false;
 
   @override
   Future<List<int>> fetchData() async {
     fetchCount++;
+    if (failNextFetch) {
+      failNextFetch = false;
+      Error.throwWithStackTrace(
+        StateError('fetch failed'),
+        StackTrace.fromString('fetch stack'),
+      );
+    }
     return <int>[fetchCount];
+  }
+
+  @override
+  void onFetchError(Object error, StackTrace stackTrace) {
+    fetchError = error;
+    fetchStackTrace = stackTrace;
   }
 }
 
@@ -111,6 +137,25 @@ void main() {
     repository.dispose();
   });
 
+  test('reset stays inactive when its final consumer removes itself', () {
+    final repository = _ResettingStreamRepository();
+    late void Function() listener;
+    listener = () {
+      if (repository.data.value == null) {
+        repository.removeListener(listener);
+      }
+    };
+
+    repository.addListener(listener);
+    repository.data.value = 1;
+    expect(repository.starts, 1);
+    repository.resetData();
+
+    expect(repository.starts, 1);
+    expect(repository.data.value, isNull);
+    repository.dispose();
+  });
+
   test('fetch configuration and reset workflow remain usable', () async {
     final daily = _FetchRepository.daily();
     final interval = _FetchRepository.interval();
@@ -128,6 +173,13 @@ void main() {
     await Future<void>.delayed(Duration.zero);
     expect(never.fetchCount, 2);
     expect(never.data.value, [2]);
+
+    never.failNextFetch = true;
+    never.resetData();
+    await Future<void>.delayed(Duration.zero);
+    expect(never.fetchError, isA<StateError>());
+    expect(never.fetchStackTrace.toString(), contains('fetch stack'));
+    expect(never.data.value, isNull);
 
     never.removeListener(listener);
     never.dispose();

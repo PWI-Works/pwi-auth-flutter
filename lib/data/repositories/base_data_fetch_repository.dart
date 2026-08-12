@@ -93,6 +93,14 @@ abstract class BaseDataFetchRepository<T> extends BaseDataRepository<T> {
   /// Loads one non-null repository value.
   Future<T> fetchData();
 
+  /// Handles a failed initial or automatic fetch.
+  ///
+  /// Override this to report repository failures to application logging or
+  /// monitoring. The default intentionally does nothing. A failure retains the
+  /// last successful [data] value and does not stop future refresh attempts.
+  @protected
+  void onFetchError(Object error, StackTrace stackTrace) {}
+
   @override
   void startDataSource() {
     final lifecycle = ++_lifecycle;
@@ -126,6 +134,10 @@ abstract class BaseDataFetchRepository<T> extends BaseDataRepository<T> {
       final value = await fetchData();
       if (hasDataConsumers && lifecycle == _lifecycle) {
         data.value = value;
+      }
+    } catch (error, stackTrace) {
+      if (hasDataConsumers && lifecycle == _lifecycle) {
+        onFetchError(error, stackTrace);
       }
     } finally {
       if (lifecycle == _lifecycle) {

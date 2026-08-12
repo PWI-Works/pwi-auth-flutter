@@ -129,7 +129,11 @@ abstract class BaseDataRepository<T> extends Model {
 
     stopDataSource();
     data.value = null;
-    startDataSource();
+    // Clearing data notifies consumers. The final consumer may remove itself
+    // during that callback, in which case the repository must remain inactive.
+    if (hasDataConsumers) {
+      startDataSource();
+    }
   }
 
   /// Enables debug lifecycle logging for this repository.

@@ -27,6 +27,9 @@ abstract class BaseDataStreamRepository<T> extends BaseDataRepository<T> {
     // start overwrite or outlive the resulting lifecycle.
     if (lifecycle != _streamLifecycle || !hasDataConsumers) {
       unawaited(subscription.cancel());
+      if (!hasDataConsumers) {
+        data.value = null;
+      }
       return;
     }
     _dataSubscription = subscription;
