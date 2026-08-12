@@ -144,7 +144,11 @@ abstract class BaseDataFetchRepository<T> extends BaseDataRepository<T> {
       }
     } catch (error, stackTrace) {
       if (hasDataConsumers && lifecycle == _lifecycle) {
-        onFetchError(error, stackTrace);
+        try {
+          onFetchError(error, stackTrace);
+        } catch (_) {
+          // Swallow to avoid uncaught async errors from background refresh attempts.
+        }
       }
     } finally {
       if (lifecycle == _lifecycle) {
