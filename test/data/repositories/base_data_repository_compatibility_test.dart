@@ -58,7 +58,7 @@ class _FetchRepository extends BaseDataFetchRepository<List<int>> {
   bool failNextFetch = false;
 
   @override
-  Future<List<int>> fetchData() async {
+  Future<List<int>> fetchData() {
     fetchCount++;
     if (failNextFetch) {
       failNextFetch = false;
@@ -67,13 +67,17 @@ class _FetchRepository extends BaseDataFetchRepository<List<int>> {
         StackTrace.fromString('fetch stack'),
       );
     }
-    return <int>[fetchCount];
+    return Future<List<int>>.value(<int>[fetchCount]);
   }
 
   @override
   void onFetchError(Object error, StackTrace stackTrace) {
     fetchError = error;
     fetchStackTrace = stackTrace;
+  }
+
+  void simulateNextAutomaticAttempt() {
+    startDataSource();
   }
 }
 
@@ -180,6 +184,12 @@ void main() {
     expect(never.fetchError, isA<StateError>());
     expect(never.fetchStackTrace.toString(), contains('fetch stack'));
     expect(never.data.value, isNull);
+
+    // A synchronous throw must not leave a completed Future marked in flight.
+    never.simulateNextAutomaticAttempt();
+    await Future<void>.delayed(Duration.zero);
+    expect(never.fetchCount, 4);
+    expect(never.data.value, [4]);
 
     never.removeListener(listener);
     never.dispose();

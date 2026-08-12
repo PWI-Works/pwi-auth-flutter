@@ -124,9 +124,16 @@ abstract class BaseDataFetchRepository<T> extends BaseDataRepository<T> {
     final existing = _inFlightFetch;
     if (existing != null) return existing;
 
-    final attempt = _performFetch(lifecycle);
-    _inFlightFetch = attempt;
-    return attempt;
+    // Install the marker before invoking subclass code. A fetchData override
+    // may throw synchronously before returning its Future, in which case
+    // _performFetch can finish its cleanup before this method regains control.
+    final attempt = Completer<void>();
+    _inFlightFetch = attempt.future;
+    _performFetch(lifecycle).then(
+      attempt.complete,
+      onError: attempt.completeError,
+    );
+    return attempt.future;
   }
 
   Future<void> _performFetch(int lifecycle) async {
