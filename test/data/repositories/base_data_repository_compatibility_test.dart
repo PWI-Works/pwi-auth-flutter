@@ -37,6 +37,10 @@ class _ResettingStreamRepository extends BaseDataStreamRepository<int> {
   }
 }
 
+class _MethodListener {
+  void onData() {}
+}
+
 class _FetchRepository extends BaseDataFetchRepository<List<int>> {
   _FetchRepository.daily()
       : super(
@@ -125,6 +129,17 @@ void main() {
     repository.removeListener(listener);
     expect(repository.controllers.single.hasListener, isFalse);
     repository.dispose();
+  });
+
+  test('method tear-offs unregister using ChangeNotifier equality', () {
+    final repository = _ExistingStreamRepository();
+    final consumer = _MethodListener();
+
+    repository.addListener(consumer.onData);
+    repository.removeListener(consumer.onData);
+
+    expect(repository.controllers.single.hasListener, isFalse);
+    expect(repository.dispose, returnsNormally);
   });
 
   test('a synchronous source emission notifies the first listener once', () {

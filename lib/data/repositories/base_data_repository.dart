@@ -11,8 +11,9 @@ import 'package:mvvm_plus/mvvm_plus.dart';
 /// must have a matching removal. Direct listeners on [data] do not keep the
 /// repository's source active.
 abstract class BaseDataRepository<T> extends Model {
-  final Map<VoidCallback, int> _consumerRegistrations =
-      Map<VoidCallback, int>.identity();
+  // Use normal callback equality to mirror ChangeNotifier. Instance-method
+  // tear-offs obtained at different times may be distinct objects but equal.
+  final Map<VoidCallback, int> _consumerRegistrations = <VoidCallback, int>{};
   int _consumerRegistrationCount = 0;
   bool _debugLoggingEnabled = false;
   String _debugClassName = '';
