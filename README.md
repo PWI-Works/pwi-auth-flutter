@@ -93,6 +93,61 @@ Note that the package import in `example/pubspec.yaml` is a relative import, mea
 
 ## Usage
 
+### Data repositories
+
+`BaseDataStreamRepository<T>` retains its existing subclass and consumer API.
+Consumers call `addListener(callback)` and pair every registration with
+`removeListener(callback)`; the shared stream is active only while those
+repository consumers exist. The older `subscribeToData(callback)` and
+`unsubscribeFromData(callback)` methods remain compatible but are deprecated.
+No immediate consumer migration is required; new code should use the standard
+listener names.
+
+`BaseDataFetchRepository<T>` supports one immediate Future-based fetch followed
+by optional daily, fixed-delay interval, or no automatic refresh. Its default is
+daily refresh at local midnight. In both repository types, `data.value == null`
+means not loaded or inactive. A successful empty collection remains a loaded
+empty collection and is not converted to `null`.
+
+Configure a daily refresh at 1:00 a.m. like this:
+
+```dart
+class MyRepository extends BaseDataFetchRepository<MyData> {
+  MyRepository()
+      : super(
+          refreshSchedule: DataRefreshSchedule.daily,
+          timeOfDay: const TimeOfDay(hour: 1, minute: 0),
+        );
+
+  @override
+  Future<MyData> fetchData() => service.fetchData();
+}
+```
+
+For an interval, use `refreshSchedule: DataRefreshSchedule.interval` with
+`numberOfMinutes: 30`. To disable automatic refresh, use
+`refreshSchedule: DataRefreshSchedule.never`. All three options still perform
+the initial fetch when the first consumer subscribes.
+
+Both repository bases support `resetData()` while active. It clears retained
+data, restarts the source lifecycle, and reloads the authoritative value. This
+can be used to recover from a failed optimistic update without requiring the
+repository base to define an optimistic-state system. The existing
+`BaseDataStreamRepository.resetStream()` method remains available and performs
+the same reset workflow for backward compatibility. For an interval-based fetch
+repository, resetting also replaces the pending timer: the next automatic fetch
+waits the full `numberOfMinutes` interval after the replacement fetch completes.
+Daily repositories recalculate their next configured wall-clock time.
+
+Fetch failures are contained by the repository so background attempts do not
+become uncaught asynchronous errors. Override `onFetchError(error, stackTrace)`
+to send failures to application logging or monitoring. Failed refreshes retain
+the last successful value and do not disable later scheduled attempts.
+
+Import these APIs from
+`package:pwi_auth/data/repositories/base_data_stream_repository.dart` or
+`package:pwi_auth/data/repositories/base_data_fetch_repository.dart`.
+
 ### Import the Package
 
 ```dart
