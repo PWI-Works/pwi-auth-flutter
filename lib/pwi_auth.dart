@@ -5,10 +5,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/browser_client.dart';
 import 'package:pwi_auth/utils.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:web/web.dart';
+import 'src/platform_client.dart';
 
 /// Abstract contract for authentication behavior exposed by [PwiAuth].
 ///
@@ -244,7 +243,7 @@ class PwiAuth extends PwiAuthBase {
       throw Exception(_notSignedInMessage);
     }
 
-    final client = BrowserClient()..withCredentials = true;
+    final client = createPlatformClient();
     final uri = Uri.parse('https://$_endPoint/api/auth-status');
     final response = await client.get(uri);
 
@@ -264,7 +263,7 @@ class PwiAuth extends PwiAuthBase {
   /// Checks if the session cookie is present in the browser.
   bool _sessionCookieIsPresent() {
     if (appUsesFirebaseAuth) return false;
-    final sessionCookie = document.cookie.split(';').firstWhere(
+    final sessionCookie = readBrowserCookies().split(';').firstWhere(
         (cookie) => cookie.trim().startsWith('__session='),
         orElse: () => '');
     return sessionCookie.isNotEmpty;
@@ -274,7 +273,7 @@ class PwiAuth extends PwiAuthBase {
   Future<void> _clearSessionCookie() async {
     if (appUsesFirebaseAuth) return;
     final url = Uri.parse('https://$_endPoint/api/clear-session-cookie');
-    final client = BrowserClient()..withCredentials = true;
+    final client = createPlatformClient();
     await client.post(url);
   }
 
@@ -306,7 +305,7 @@ class PwiAuth extends PwiAuthBase {
   ///
   /// Throws an [Exception] if setting the session cookie fails.
   Future<void> _setSessionCookie(String idToken) async {
-    final client = BrowserClient()..withCredentials = true;
+    final client = createPlatformClient();
 
     final url = Uri.parse('https://$_endPoint/api/set-session-cookie');
     final headers = {'Content-Type': 'application/json'};
@@ -332,7 +331,7 @@ class PwiAuth extends PwiAuthBase {
 
   Future<String> _fetchMicrosoftAutoLinkCustomToken(
       String microsoftIdToken) async {
-    final client = BrowserClient()..withCredentials = true;
+    final client = createPlatformClient();
 
     final url = Uri.parse('https://$_endPoint/api/microsoft-auto-link');
     final headers = {'Content-Type': 'application/json'};
