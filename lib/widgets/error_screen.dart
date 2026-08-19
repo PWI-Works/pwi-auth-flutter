@@ -8,13 +8,13 @@ class ErrorScreen extends StatelessWidget {
   final String message;
 
   /// Email address used by the support contact button.
-  final String supportEmailAddress;
+  final String? supportEmailAddress;
 
   /// Subject line used by the support contact button.
-  final String supportEmailSubject;
+  final String? supportEmailSubject;
 
   /// Body used by the support contact button.
-  final String supportEmailBody;
+  final String? supportEmailBody;
 
   /// Label shown on the support contact button.
   final String supportButtonLabel;
@@ -25,9 +25,9 @@ class ErrorScreen extends StatelessWidget {
   const ErrorScreen({
     super.key,
     required this.message,
-    required this.supportEmailAddress,
-    required this.supportEmailSubject,
-    required this.supportEmailBody,
+    this.supportEmailAddress,
+    this.supportEmailSubject,
+    this.supportEmailBody,
     this.supportButtonLabel = 'Email Support',
   });
 
@@ -47,11 +47,14 @@ class ErrorScreen extends StatelessWidget {
               child: InfoCard(
                 message: message,
                 displayType: InfoCardDisplayType.error,
-                bottomWidget: FilledButton.icon(
-                  onPressed: _emailSupport,
-                  icon: const Icon(Icons.email_outlined),
-                  label: Text(supportButtonLabel),
-                ),
+                bottomWidget: supportEmailAddress != null &&
+                        supportEmailAddress!.isNotEmpty
+                    ? FilledButton.icon(
+                        onPressed: _emailSupport,
+                        icon: const Icon(Icons.email_outlined),
+                        label: Text(supportButtonLabel),
+                      )
+                    : null,
               ),
             ),
           ),
@@ -61,10 +64,13 @@ class ErrorScreen extends StatelessWidget {
   }
 
   Future<void> _emailSupport() {
-    final uri = Uri.parse(
-      'mailto:$supportEmailAddress'
-      '?subject=${Uri.encodeComponent(supportEmailSubject)}'
-      '&body=${Uri.encodeComponent(supportEmailBody)}',
+    final uri = Uri(
+      scheme: 'mailto',
+      path: supportEmailAddress,
+      queryParameters: {
+        if (supportEmailSubject != null) 'subject': supportEmailSubject,
+        if (supportEmailBody != null) 'body': supportEmailBody,
+      },
     );
 
     return launchUrl(uri);
