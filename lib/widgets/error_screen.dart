@@ -63,9 +63,9 @@ class ErrorScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _emailSupport() {
+  Future<void> _emailSupport() async {
     if (supportEmailAddress?.isEmpty ?? true) {
-      return Future.value();
+      return;
     }
 
     final uri = Uri(
@@ -77,6 +77,6 @@ class ErrorScreen extends StatelessWidget {
       },
     );
 
-    return launchUrl(uri);
+    await launchUrl(uri);
   }
 }
