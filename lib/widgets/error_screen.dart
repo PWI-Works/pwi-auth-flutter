@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'info_card.dart';
 
 /// A stateless widget that displays an error message on the screen.
@@ -6,10 +7,29 @@ class ErrorScreen extends StatelessWidget {
   /// The error message to be displayed.
   final String message;
 
+  /// Email address used by the support contact button.
+  final String supportEmailAddress;
+
+  /// Subject line used by the support contact button.
+  final String supportEmailSubject;
+
+  /// Body used by the support contact button.
+  final String supportEmailBody;
+
+  /// Label shown on the support contact button.
+  final String supportButtonLabel;
+
   /// Creates an [ErrorScreen] widget.
   ///
   /// The [message] parameter is required and must not be null.
-  const ErrorScreen({super.key, required this.message});
+  const ErrorScreen({
+    super.key,
+    required this.message,
+    required this.supportEmailAddress,
+    required this.supportEmailSubject,
+    required this.supportEmailBody,
+    this.supportButtonLabel = 'Email Support',
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,11 +47,26 @@ class ErrorScreen extends StatelessWidget {
               child: InfoCard(
                 message: message,
                 displayType: InfoCardDisplayType.error,
+                bottomWidget: FilledButton.icon(
+                  onPressed: _emailSupport,
+                  icon: const Icon(Icons.email_outlined),
+                  label: Text(supportButtonLabel),
+                ),
               ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _emailSupport() {
+    final uri = Uri.parse(
+      'mailto:$supportEmailAddress'
+      '?subject=${Uri.encodeComponent(supportEmailSubject)}'
+      '&body=${Uri.encodeComponent(supportEmailBody)}',
+    );
+
+    return launchUrl(uri);
   }
 }
