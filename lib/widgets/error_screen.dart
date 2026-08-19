@@ -71,10 +71,12 @@ class ErrorScreen extends StatelessWidget {
     final uri = Uri(
       scheme: 'mailto',
       path: supportEmailAddress!,
-      queryParameters: {
-        if (supportEmailSubject != null) 'subject': supportEmailSubject,
-        if (supportEmailBody != null) 'body': supportEmailBody,
-      },
+      query: [
+        if (supportEmailSubject != null)
+          'subject=${Uri.encodeComponent(supportEmailSubject!)}',
+        if (supportEmailBody != null)
+          'body=${Uri.encodeComponent(supportEmailBody!)}',
+      ].join('&'),
     );
 
     await launchUrl(uri);
