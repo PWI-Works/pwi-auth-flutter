@@ -64,9 +64,13 @@ class ErrorScreen extends StatelessWidget {
   }
 
   Future<void> _emailSupport() {
+    if (supportEmailAddress?.isEmpty ?? true) {
+      return Future.value();
+    }
+
     final uri = Uri(
       scheme: 'mailto',
-      path: supportEmailAddress,
+      path: supportEmailAddress!,
       queryParameters: {
         if (supportEmailSubject != null) 'subject': supportEmailSubject,
         if (supportEmailBody != null) 'body': supportEmailBody,
