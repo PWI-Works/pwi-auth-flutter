@@ -50,6 +50,11 @@ class ErrorScreen extends StatelessWidget {
                 bottomWidget: supportEmailAddress != null &&
                         supportEmailAddress!.isNotEmpty
                     ? FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          backgroundColor:
+                              Theme.of(context).colorScheme.onError,
+                          foregroundColor: Theme.of(context).colorScheme.error,
+                        ),
                         onPressed: _emailSupport,
                         icon: const Icon(Icons.email_outlined),
                         label: Text(supportButtonLabel),
