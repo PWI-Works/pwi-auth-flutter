@@ -52,8 +52,9 @@ class ErrorScreen extends StatelessWidget {
                     ? FilledButton.icon(
                         style: FilledButton.styleFrom(
                           backgroundColor:
-                              Theme.of(context).colorScheme.onError,
-                          foregroundColor: Theme.of(context).colorScheme.error,
+                              Theme.of(context).colorScheme.errorContainer,
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onErrorContainer,
                         ),
                         onPressed: _emailSupport,
                         icon: const Icon(Icons.email_outlined),
