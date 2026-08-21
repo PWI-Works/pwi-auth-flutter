@@ -58,6 +58,9 @@ class InfoCard extends StatelessWidget {
   /// Optional widget displayed below the main message row.
   final Widget? bottomWidget;
 
+  /// Alignment for [bottomWidget] within the card width.
+  final AlignmentGeometry bottomWidgetAlignment;
+
   /// Creates an [InfoCard] widget.
   ///
   /// Provide either [message] or [richTextMessage]. The [useStandardCardMargin] parameter defaults
@@ -73,6 +76,7 @@ class InfoCard extends StatelessWidget {
     this.icon,
     this.trailingWidget,
     this.bottomWidget,
+    this.bottomWidgetAlignment = Alignment.center,
   }) : assert(
           message != null || richTextMessage != null,
           'Provide either message or richTextMessage.',
@@ -116,7 +120,13 @@ class InfoCard extends StatelessWidget {
             ),
             if (bottomWidget != null) ...[
               const SizedBox(height: 12),
-              bottomWidget!,
+              SizedBox(
+                width: double.infinity,
+                child: Align(
+                  alignment: bottomWidgetAlignment,
+                  child: bottomWidget!,
+                ),
+              ),
             ],
           ],
         ),
