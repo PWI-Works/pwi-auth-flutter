@@ -91,6 +91,9 @@ class ErrorPageScreen extends StatelessWidget {
       body: ErrorScreen(
         message:
             "This is an error screen. It uses animations to draw attention.",
+        supportEmailAddress: 'support@example.com',
+        supportEmailSubject: 'Example error',
+        supportEmailBody: 'Example error details.',
       ),
     );
   }

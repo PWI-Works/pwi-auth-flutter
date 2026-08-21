@@ -52,6 +52,15 @@ class InfoCard extends StatelessWidget {
   /// Optional override for icon to display alongside the message.
   final Icon? icon;
 
+  /// Optional widget displayed after the message in the main row.
+  final Widget? trailingWidget;
+
+  /// Optional widget displayed below the main message row.
+  final Widget? bottomWidget;
+
+  /// Alignment for [bottomWidget] within the card width.
+  final AlignmentGeometry bottomWidgetAlignment;
+
   /// Creates an [InfoCard] widget.
   ///
   /// Provide either [message] or [richTextMessage]. The [useStandardCardMargin] parameter defaults
@@ -65,6 +74,9 @@ class InfoCard extends StatelessWidget {
     this.useStandardCardMargin = false,
     this.displayType = InfoCardDisplayType.normal,
     this.icon,
+    this.trailingWidget,
+    this.bottomWidget,
+    this.bottomWidgetAlignment = Alignment.center,
   }) : assert(
           message != null || richTextMessage != null,
           'Provide either message or richTextMessage.',
@@ -80,23 +92,42 @@ class InfoCard extends StatelessWidget {
       color: _getBackgroundColor(context),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(_icon, color: textColor),
-            const SizedBox(width: 8),
-            Flexible(
-              child: richTextMessage != null
-                  ? Text.rich(
-                      richTextMessage!,
-                      style: TextStyle(
-                        color: textColor,
-                        decorationColor: textColor,
-                      ),
-                    )
-                  : Text(message!, style: TextStyle(color: textColor)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(_icon, color: textColor),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: richTextMessage != null
+                      ? Text.rich(
+                          richTextMessage!,
+                          style: TextStyle(
+                            color: textColor,
+                            decorationColor: textColor,
+                          ),
+                        )
+                      : Text(message!, style: TextStyle(color: textColor)),
+                ),
+                if (trailingWidget != null) ...[
+                  const SizedBox(width: 8),
+                  trailingWidget!,
+                ],
+              ],
             ),
+            if (bottomWidget != null) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: Align(
+                  alignment: bottomWidgetAlignment,
+                  child: bottomWidget!,
+                ),
+              ),
+            ],
           ],
         ),
       ),

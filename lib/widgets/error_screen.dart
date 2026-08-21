@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'info_card.dart';
 
 /// A stateless widget that displays an error message on the screen.
@@ -6,10 +7,29 @@ class ErrorScreen extends StatelessWidget {
   /// The error message to be displayed.
   final String message;
 
+  /// Email address used by the support contact button.
+  final String? supportEmailAddress;
+
+  /// Subject line used by the support contact button.
+  final String? supportEmailSubject;
+
+  /// Body used by the support contact button.
+  final String? supportEmailBody;
+
+  /// Label shown on the support contact button.
+  final String supportButtonLabel;
+
   /// Creates an [ErrorScreen] widget.
   ///
   /// The [message] parameter is required and must not be null.
-  const ErrorScreen({super.key, required this.message});
+  const ErrorScreen({
+    super.key,
+    required this.message,
+    this.supportEmailAddress,
+    this.supportEmailSubject,
+    this.supportEmailBody,
+    this.supportButtonLabel = 'Email Support',
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,11 +47,44 @@ class ErrorScreen extends StatelessWidget {
               child: InfoCard(
                 message: message,
                 displayType: InfoCardDisplayType.error,
+                bottomWidget: supportEmailAddress != null &&
+                        supportEmailAddress!.isNotEmpty
+                    ? FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          backgroundColor:
+                              Theme.of(context).colorScheme.errorContainer,
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onErrorContainer,
+                        ),
+                        onPressed: _emailSupport,
+                        icon: const Icon(Icons.email_outlined),
+                        label: Text(supportButtonLabel),
+                      )
+                    : null,
               ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _emailSupport() async {
+    if (supportEmailAddress?.isEmpty ?? true) {
+      return;
+    }
+
+    final uri = Uri(
+      scheme: 'mailto',
+      path: supportEmailAddress!,
+      query: [
+        if (supportEmailSubject != null)
+          'subject=${Uri.encodeComponent(supportEmailSubject!)}',
+        if (supportEmailBody != null)
+          'body=${Uri.encodeComponent(supportEmailBody!)}',
+      ].join('&'),
+    );
+
+    await launchUrl(uri);
   }
 }
