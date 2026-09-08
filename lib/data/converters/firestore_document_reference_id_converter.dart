@@ -4,7 +4,9 @@ import 'package:json_annotation/json_annotation.dart';
 /// Converts a Firestore document reference field to the referenced document ID.
 class FirestoreDocumentReferenceIdConverter
     implements JsonConverter<String?, Object?> {
-  const FirestoreDocumentReferenceIdConverter();
+  const FirestoreDocumentReferenceIdConverter(this.collectionPath);
+
+  final String collectionPath;
 
   @override
   String? fromJson(Object? json) {
@@ -23,5 +25,11 @@ class FirestoreDocumentReferenceIdConverter
   }
 
   @override
-  Object? toJson(String? object) => object;
+  Object? toJson(String? object) {
+    if (object == null) {
+      return null;
+    }
+
+    return FirebaseFirestore.instance.collection(collectionPath).doc(object);
+  }
 }
