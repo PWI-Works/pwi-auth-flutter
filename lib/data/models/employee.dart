@@ -11,6 +11,8 @@ import 'package:pwi_auth/semantic_colors.dart';
 /// top of this model. Additional getter properties and methods should be added
 /// via extensions instead of modifying or extending this core model.
 class Employee {
+  static const Object _unset = Object();
+
   /// Unique identifier for the employee
   final String id;
 
@@ -22,6 +24,15 @@ class Employee {
 
   /// Employee's preferred name
   final String preferredName;
+
+  /// Employee's work email address
+  final String workEmail;
+
+  /// Employee's mobile phone number
+  final String mobile;
+
+  /// Active Directory automation processing status.
+  final String? activeDirectoryProcessingStatus;
 
   /// Employee's full name by last name
   final String fullNameByLastName;
@@ -56,6 +67,33 @@ class Employee {
   /// Gets the preferred first name from the preferred name string.
   String get preferredFirstName => preferredName.split(' ')[0];
 
+  /// Creates a copy with updated modifiable fields.
+  Employee copyWith({
+    Object? activeDirectoryProcessingStatus = _unset,
+  }) {
+    return Employee._(
+      id: id,
+      firstName: firstName,
+      lastName: lastName,
+      preferredName: preferredName,
+      workEmail: workEmail,
+      mobile: mobile,
+      activeDirectoryProcessingStatus:
+          identical(activeDirectoryProcessingStatus, _unset)
+              ? this.activeDirectoryProcessingStatus
+              : activeDirectoryProcessingStatus as String?,
+      fullNameByLastName: fullNameByLastName,
+      supervisor: supervisor,
+      seniority: seniority,
+      jobTitle: jobTitle,
+      department: department,
+      employeeType: employeeType,
+      startDate: startDate,
+      lastDayAtPWI: lastDayAtPWI,
+      isActive: isActive,
+    );
+  }
+
   /// Private constructor for Employee, as we don't want our apps to create new Employees
   /// at this time. Use [Employee.fromFirestore] to instantiate.
   Employee._({
@@ -63,6 +101,8 @@ class Employee {
     required this.firstName,
     required this.lastName,
     required this.preferredName,
+    required this.workEmail,
+    required this.mobile,
     required this.fullNameByLastName,
     this.supervisor,
     required this.seniority,
@@ -72,6 +112,7 @@ class Employee {
     required this.startDate,
     required this.lastDayAtPWI,
     required this.isActive,
+    required this.activeDirectoryProcessingStatus,
   });
 
   /// Factory constructor to create an [Employee] instance from a Firestore document.
@@ -110,6 +151,10 @@ class Employee {
       firstName: getString('firstName'),
       lastName: getString('lastName'),
       preferredName: getString('preferredName'),
+      workEmail: getString('workEmail'),
+      mobile: getString('mobile'),
+      activeDirectoryProcessingStatus:
+          data['activeDirectoryProcessingStatus'] as String?,
       fullNameByLastName: getString('fullNameByLastname'),
       supervisor: data['supervisor'] as DocumentReference?,
       seniority: getString('seniorityString'),
