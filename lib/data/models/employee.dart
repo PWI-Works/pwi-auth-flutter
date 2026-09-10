@@ -2,66 +2,105 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:pwi_auth/data/models/color_set.dart';
 import 'package:pwi_auth/semantic_colors.dart';
+
+part 'employee.g.dart';
 
 /// Represents an employee with various attributes.
 ///
 /// See `default_employee_extensions.dart` for convenience role helpers built on
 /// top of this model. Additional getter properties and methods should be added
 /// via extensions instead of modifying or extending this core model.
+@JsonSerializable(constructor: '_')
 class Employee {
   static const Object _unset = Object();
 
   /// Unique identifier for the employee
+  @JsonKey(includeToJson: false)
   final String id;
 
   /// Employee's first name
+  @JsonKey(fromJson: _stringFromJson, includeToJson: false)
   final String firstName;
 
   /// Employee's last name
+  @JsonKey(fromJson: _stringFromJson, includeToJson: false)
   final String lastName;
 
   /// Employee's preferred name
+  @JsonKey(fromJson: _stringFromJson, includeToJson: false)
   final String preferredName;
 
   /// Employee's work email address
+  @JsonKey(fromJson: _stringFromJson, includeToJson: false)
   final String workEmail;
 
   /// Employee's mobile phone number
+  @JsonKey(fromJson: _stringFromJson, includeToJson: false)
   final String mobile;
 
   /// Active Directory automation processing status.
   final String? activeDirectoryProcessingStatus;
 
   /// Employee's full name by last name
+  @JsonKey(
+    name: 'fullNameByLastname',
+    fromJson: _stringFromJson,
+    includeToJson: false,
+  )
   final String fullNameByLastName;
 
   /// ID of the employee's supervisor
   String get supervisorId => supervisor?.id ?? '';
 
   /// Firestore reference to the supervisor's document
+  @JsonKey(fromJson: _documentReferenceFromJson, includeToJson: false)
   final DocumentReference? supervisor;
 
   /// String representing the employee's seniority level
+  @JsonKey(
+    name: 'seniorityString',
+    fromJson: _stringFromJson,
+    includeToJson: false,
+  )
   final String seniority;
 
   /// String representing the employee's job title
+  @JsonKey(
+    name: 'jobTitleString',
+    fromJson: _jobTitleFromJson,
+    includeToJson: false,
+  )
   final String jobTitle;
 
   /// String representing the employee's department
+  @JsonKey(
+    name: 'departmentString',
+    fromJson: _departmentFromJson,
+    includeToJson: false,
+  )
   final String department;
 
   /// Type of employee (e.g., full-time, part-time)
+  @JsonKey(fromJson: _employeeTypeFromJson, includeToJson: false)
   final String? employeeType;
 
   /// Date when the employee started
+  @JsonKey(fromJson: _dateFromJson, includeToJson: false)
   final DateTime? startDate;
 
   /// Date when the employee ended (if applicable)
+  @JsonKey(fromJson: _lastDayAtPwiFromJson, includeToJson: false)
   final DateTime? lastDayAtPWI;
 
   /// Indicates if the employee is currently active
+  @JsonKey(
+    name: 'employmentStatus',
+    fromJson: _isActiveFromJson,
+    includeToJson: false,
+  )
   final bool isActive;
 
   /// Gets the preferred first name from the preferred name string.
@@ -123,63 +162,15 @@ class Employee {
   /// \return An [Employee] instance populated with data from the document.
   /// Factory constructor to create an [Employee] instance from a Firestore document.
   /// Parses the Firestore document snapshot and initializes an [Employee] object.
-  factory Employee.fromFirestore(DocumentSnapshot doc) {
-    final data =
-        doc.data() as Map<String, dynamic>; // Retrieve data from the document
+  factory Employee.fromFirestore(DocumentSnapshot doc) => Employee.fromJson({
+        ...(doc.data() as Map<String, dynamic>),
+        'id': doc.id,
+      });
 
-    /// Helper function to safely extract string values with a default fallback.
-    ///
-    /// \param key The key to look up in the data map.
-    /// \param defaultValue The default value to return if the key is not found or the value is not a string.
-    /// \return The string value associated with the key, or the default value.
-    /// Helper function to safely extract string values with a default fallback.
-    String getString(String key, [String defaultValue = 'Unknown']) {
-      if (data.containsKey(key)) {
-        final value = data[key];
-        if (value is String) {
-          return value.trim(); // Return trimmed string if the value is a string
-        } else if (value != null) {
-          // Optionally convert non-string values to string
-          return value.toString();
-        }
-      }
-      return defaultValue; // Return default value if key is missing or value is null
-    }
+  factory Employee.fromJson(Map<String, dynamic> json) =>
+      _$EmployeeFromJson(json);
 
-    return Employee._(
-      id: doc.id,
-      firstName: getString('firstName'),
-      lastName: getString('lastName'),
-      preferredName: getString('preferredName'),
-      workEmail: getString('workEmail'),
-      mobile: getString('mobile'),
-      activeDirectoryProcessingStatus:
-          data['activeDirectoryProcessingStatus'] as String?,
-      fullNameByLastName: getString('fullNameByLastname'),
-      supervisor: data['supervisor'] as DocumentReference?,
-      seniority: getString('seniorityString'),
-      jobTitle: getString('jobTitleString', '-'),
-      department: getString('departmentString', '-'),
-      employeeType: getString('employeeType'),
-      startDate: (() {
-        try {
-          return DateTime.parse(getString('startDate'));
-        } catch (e) {
-          return null;
-        }
-      })(),
-      lastDayAtPWI: (() {
-        try {
-          return getString('lastDayAtPWI') != 'Unknown'
-              ? DateTime.parse(getString('lastDayAtPWI'))
-              : null;
-        } catch (e) {
-          return null;
-        }
-      })(),
-      isActive: getString('employmentStatus').toLowerCase() == 'active',
-    );
-  }
+  Map<String, dynamic> toJson() => _$EmployeeToJson(this);
 
   /// Gets the initials from the preferred name.
   /// This method splits the preferredName by spaces and returns a string containing the first letter of the first word and the first letter of the last word.
@@ -211,4 +202,55 @@ class Employee {
     // Default color if no matches found
     return const ColorSet(background: Colors.grey, foreground: Colors.black);
   }
+}
+
+String _stringFromJson(Object? value) {
+  if (value is String) {
+    return value.trim();
+  }
+  if (value != null) {
+    return value.toString();
+  }
+  return 'Unknown';
+}
+
+String _jobTitleFromJson(Object? value) {
+  final jobTitle = _stringFromJson(value);
+  return jobTitle == 'Unknown' ? '-' : jobTitle;
+}
+
+String _departmentFromJson(Object? value) {
+  final department = _stringFromJson(value);
+  return department == 'Unknown' ? '-' : department;
+}
+
+String? _employeeTypeFromJson(Object? value) => _stringFromJson(value);
+
+DateTime? _dateFromJson(Object? value) {
+  try {
+    return DateTime.parse(_stringFromJson(value));
+  } catch (_) {
+    return null;
+  }
+}
+
+DateTime? _lastDayAtPwiFromJson(Object? value) {
+  final date = _stringFromJson(value);
+  if (date == 'Unknown') {
+    return null;
+  }
+
+  try {
+    return DateTime.parse(date);
+  } catch (_) {
+    return null;
+  }
+}
+
+bool _isActiveFromJson(Object? value) {
+  return _stringFromJson(value).toLowerCase() == 'active';
+}
+
+DocumentReference? _documentReferenceFromJson(Object? value) {
+  return value as DocumentReference?;
 }
