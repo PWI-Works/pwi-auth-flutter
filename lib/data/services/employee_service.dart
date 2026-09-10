@@ -57,4 +57,11 @@ class EmployeeService implements EmployeeServiceInterface {
     // Convert the fetched document to an [Employee] object
     return Employee.fromFirestore(doc);
   }
+
+  Future<void> upsertEmployee(Employee employee) {
+    return _employeeCollection.doc(employee.id).set(
+          employee.toJson(),
+          SetOptions(merge: true),
+        );
+  }
 }

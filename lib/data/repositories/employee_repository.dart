@@ -59,4 +59,8 @@ class EmployeeRepository extends BaseDataStreamRepository<List<Employee>> {
       return null;
     }
   }
+
+  Future<void> upsertEmployee(Employee employee) {
+    return _employeeService.upsertEmployee(employee);
+  }
 }
