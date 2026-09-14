@@ -210,11 +210,7 @@ DateTime? _dateFromJson(Object? value) {
     return null;
   }
 
-  try {
-    return DateTime.parse((value as String).trim());
-  } catch (_) {
-    return null;
-  }
+  return DateTime.parse((value as String).trim());
 }
 
 String? _supervisorIdFromJson(Object? value) {
