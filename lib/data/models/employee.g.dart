@@ -14,7 +14,7 @@ Employee _$EmployeeFromJson(Map<String, dynamic> json) => Employee._(
       workEmail: json['workEmail'] as String,
       mobile: json['mobile'] as String,
       fullNameByLastName: json['fullNameByLastname'] as String,
-      supervisor: _documentReferenceFromJson(json['supervisor']),
+      supervisorId: _supervisorIdFromJson(json['supervisor']),
       seniority: json['seniorityString'] as String,
       jobTitle: json['jobTitleString'] as String,
       department: json['departmentString'] as String,

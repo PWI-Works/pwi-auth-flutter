@@ -3,6 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:pwi_auth/data/converters/firestore_document_reference_id_converter.dart';
 import 'package:pwi_auth/data/models/color_set.dart';
 import 'package:pwi_auth/enums/employee_type.dart';
 import 'package:pwi_auth/enums/employment_status.dart';
@@ -54,11 +55,12 @@ class Employee {
   final String fullNameByLastName;
 
   /// ID of the employee's supervisor
-  String get supervisorId => supervisor?.id ?? '';
-
-  /// Firestore reference to the supervisor's document
-  @JsonKey(fromJson: _documentReferenceFromJson, includeToJson: false)
-  final DocumentReference? supervisor;
+  @JsonKey(
+    name: 'supervisor',
+    fromJson: _supervisorIdFromJson,
+    includeToJson: false,
+  )
+  final String? supervisorId;
 
   /// String representing the employee's seniority level
   @JsonKey(
@@ -121,7 +123,7 @@ class Employee {
               ? this.activeDirectoryProcessingStatus
               : activeDirectoryProcessingStatus as String?,
       fullNameByLastName: fullNameByLastName,
-      supervisor: supervisor,
+      supervisorId: supervisorId,
       seniority: seniority,
       jobTitle: jobTitle,
       department: department,
@@ -142,7 +144,7 @@ class Employee {
     required this.workEmail,
     required this.mobile,
     required this.fullNameByLastName,
-    this.supervisor,
+    this.supervisorId,
     required this.seniority,
     required this.jobTitle,
     required this.department,
@@ -215,6 +217,7 @@ DateTime? _dateFromJson(Object? value) {
   }
 }
 
-DocumentReference? _documentReferenceFromJson(Object? value) {
-  return value as DocumentReference?;
+String? _supervisorIdFromJson(Object? value) {
+  return const FirestoreDocumentReferenceIdConverter('employees')
+      .fromJson(value);
 }
