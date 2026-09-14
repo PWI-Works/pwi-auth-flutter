@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pwi_auth/data/models/color_set.dart';
+import 'package:pwi_auth/enums/employee_type.dart';
 import 'package:pwi_auth/enums/employment_status.dart';
 import 'package:pwi_auth/semantic_colors.dart';
 
@@ -82,7 +83,7 @@ class Employee {
 
   /// Type of employee (e.g., full-time, part-time)
   @JsonKey(includeToJson: false)
-  final String? employeeType;
+  final EmployeeType? employeeType;
 
   /// Date when the employee started
   @JsonKey(fromJson: _dateFromJson, includeToJson: false)
