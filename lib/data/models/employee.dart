@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pwi_auth/data/models/color_set.dart';
+import 'package:pwi_auth/enums/employment_status.dart';
 import 'package:pwi_auth/semantic_colors.dart';
 
 part 'employee.g.dart';
@@ -91,13 +92,14 @@ class Employee {
   @JsonKey(fromJson: _dateFromJson, includeToJson: false)
   final DateTime? lastDayAtPWI;
 
-  /// Indicates if the employee is currently active
+  /// Employee's current employment status.
   @JsonKey(
-    name: 'employmentStatus',
-    fromJson: _isActiveFromJson,
     includeToJson: false,
   )
-  final bool isActive;
+  final EmploymentStatus employmentStatus;
+
+  /// Indicates if the employee is currently active.
+  bool get isActive => employmentStatus == EmploymentStatus.active;
 
   /// Gets the preferred first name from the preferred name string.
   String get preferredFirstName => preferredName.split(' ')[0];
@@ -125,7 +127,7 @@ class Employee {
       employeeType: employeeType,
       startDate: startDate,
       lastDayAtPWI: lastDayAtPWI,
-      isActive: isActive,
+      employmentStatus: employmentStatus,
     );
   }
 
@@ -146,7 +148,7 @@ class Employee {
     this.employeeType,
     required this.startDate,
     required this.lastDayAtPWI,
-    required this.isActive,
+    required this.employmentStatus,
     required this.activeDirectoryProcessingStatus,
   });
 
@@ -210,10 +212,6 @@ DateTime? _dateFromJson(Object? value) {
   } catch (_) {
     return null;
   }
-}
-
-bool _isActiveFromJson(Object? value) {
-  return (value as String).trim().toLowerCase() == 'active';
 }
 
 DocumentReference? _documentReferenceFromJson(Object? value) {

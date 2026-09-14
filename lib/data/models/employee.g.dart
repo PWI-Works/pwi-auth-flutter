@@ -21,7 +21,8 @@ Employee _$EmployeeFromJson(Map<String, dynamic> json) => Employee._(
       employeeType: json['employeeType'] as String?,
       startDate: _dateFromJson(json['startDate']),
       lastDayAtPWI: _dateFromJson(json['lastDayAtPWI']),
-      isActive: _isActiveFromJson(json['employmentStatus']),
+      employmentStatus:
+          $enumDecode(_$EmploymentStatusEnumMap, json['employmentStatus']),
       activeDirectoryProcessingStatus:
           json['activeDirectoryProcessingStatus'] as String?,
     );
@@ -30,3 +31,8 @@ Map<String, dynamic> _$EmployeeToJson(Employee instance) => <String, dynamic>{
       'activeDirectoryProcessingStatus':
           instance.activeDirectoryProcessingStatus,
     };
+
+const _$EmploymentStatusEnumMap = {
+  EmploymentStatus.active: 'Active',
+  EmploymentStatus.inactive: 'Inactive',
+};
