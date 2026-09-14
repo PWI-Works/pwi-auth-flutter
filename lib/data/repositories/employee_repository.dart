@@ -60,7 +60,20 @@ class EmployeeRepository extends BaseDataStreamRepository<List<Employee>> {
     }
   }
 
-  Future<void> upsertEmployee(Employee employee) {
-    return _employeeService.upsertEmployee(employee);
+  Future<void> upsertEmployee(Employee employee) async {
+    final currentEmployees = data.value;
+
+    if (currentEmployees != null) {
+      data.value = currentEmployees.map((currentEmployee) {
+        return currentEmployee.id == employee.id ? employee : currentEmployee;
+      }).toList();
+    }
+
+    try {
+      await _employeeService.upsertEmployee(employee);
+    } catch (_) {
+      resetStream();
+      rethrow;
+    }
   }
 }
