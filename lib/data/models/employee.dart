@@ -22,23 +22,23 @@ class Employee {
   final String id;
 
   /// Employee's first name
-  @JsonKey(fromJson: _stringFromJson, includeToJson: false)
+  @JsonKey(includeToJson: false)
   final String firstName;
 
   /// Employee's last name
-  @JsonKey(fromJson: _stringFromJson, includeToJson: false)
+  @JsonKey(includeToJson: false)
   final String lastName;
 
   /// Employee's preferred name
-  @JsonKey(fromJson: _stringFromJson, includeToJson: false)
+  @JsonKey(includeToJson: false)
   final String preferredName;
 
   /// Employee's work email address
-  @JsonKey(fromJson: _stringFromJson, includeToJson: false)
+  @JsonKey(includeToJson: false)
   final String workEmail;
 
   /// Employee's mobile phone number
-  @JsonKey(fromJson: _stringFromJson, includeToJson: false)
+  @JsonKey(includeToJson: false)
   final String mobile;
 
   /// Active Directory automation processing status.
@@ -47,7 +47,6 @@ class Employee {
   /// Employee's full name by last name
   @JsonKey(
     name: 'fullNameByLastname',
-    fromJson: _stringFromJson,
     includeToJson: false,
   )
   final String fullNameByLastName;
@@ -62,7 +61,6 @@ class Employee {
   /// String representing the employee's seniority level
   @JsonKey(
     name: 'seniorityString',
-    fromJson: _stringFromJson,
     includeToJson: false,
   )
   final String seniority;
@@ -70,7 +68,6 @@ class Employee {
   /// String representing the employee's job title
   @JsonKey(
     name: 'jobTitleString',
-    fromJson: _jobTitleFromJson,
     includeToJson: false,
   )
   final String jobTitle;
@@ -78,13 +75,12 @@ class Employee {
   /// String representing the employee's department
   @JsonKey(
     name: 'departmentString',
-    fromJson: _departmentFromJson,
     includeToJson: false,
   )
   final String department;
 
   /// Type of employee (e.g., full-time, part-time)
-  @JsonKey(fromJson: _employeeTypeFromJson, includeToJson: false)
+  @JsonKey(includeToJson: false)
   final String? employeeType;
 
   /// Date when the employee started
@@ -92,7 +88,7 @@ class Employee {
   final DateTime? startDate;
 
   /// Date when the employee ended (if applicable)
-  @JsonKey(fromJson: _lastDayAtPwiFromJson, includeToJson: false)
+  @JsonKey(fromJson: _dateFromJson, includeToJson: false)
   final DateTime? lastDayAtPWI;
 
   /// Indicates if the employee is currently active
@@ -204,51 +200,20 @@ class Employee {
   }
 }
 
-String _stringFromJson(Object? value) {
-  if (value is String) {
-    return value.trim();
-  }
-  if (value != null) {
-    return value.toString();
-  }
-  return 'Unknown';
-}
-
-String _jobTitleFromJson(Object? value) {
-  final jobTitle = _stringFromJson(value);
-  return jobTitle == 'Unknown' ? '-' : jobTitle;
-}
-
-String _departmentFromJson(Object? value) {
-  final department = _stringFromJson(value);
-  return department == 'Unknown' ? '-' : department;
-}
-
-String? _employeeTypeFromJson(Object? value) => _stringFromJson(value);
-
 DateTime? _dateFromJson(Object? value) {
-  try {
-    return DateTime.parse(_stringFromJson(value));
-  } catch (_) {
-    return null;
-  }
-}
-
-DateTime? _lastDayAtPwiFromJson(Object? value) {
-  final date = _stringFromJson(value);
-  if (date == 'Unknown') {
+  if (value == null) {
     return null;
   }
 
   try {
-    return DateTime.parse(date);
+    return DateTime.parse((value as String).trim());
   } catch (_) {
     return null;
   }
 }
 
 bool _isActiveFromJson(Object? value) {
-  return _stringFromJson(value).toLowerCase() == 'active';
+  return (value as String).trim().toLowerCase() == 'active';
 }
 
 DocumentReference? _documentReferenceFromJson(Object? value) {
