@@ -49,10 +49,9 @@ class Employee {
 
   /// Employee's full name by last name
   @JsonKey(
-    name: 'fullNameByLastname',
     includeToJson: false,
   )
-  final String fullNameByLastName;
+  final String fullNameByLastname;
 
   /// ID of the employee's supervisor
   @JsonKey(
@@ -122,7 +121,7 @@ class Employee {
           identical(activeDirectoryProcessingStatus, _unset)
               ? this.activeDirectoryProcessingStatus
               : activeDirectoryProcessingStatus as String?,
-      fullNameByLastName: fullNameByLastName,
+      fullNameByLastname: fullNameByLastname,
       supervisorId: supervisorId,
       seniority: seniority,
       jobTitle: jobTitle,
@@ -143,7 +142,7 @@ class Employee {
     required this.preferredName,
     required this.workEmail,
     required this.mobile,
-    required this.fullNameByLastName,
+    required this.fullNameByLastname,
     this.supervisorId,
     required this.seniority,
     required this.jobTitle,
