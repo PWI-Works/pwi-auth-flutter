@@ -14,7 +14,8 @@ Employee _$EmployeeFromJson(Map<String, dynamic> json) => Employee._(
       workEmail: json['workEmail'] as String,
       mobile: json['mobile'] as String,
       fullNameByLastname: json['fullNameByLastname'] as String,
-      supervisorId: _supervisorIdFromJson(json['supervisor']),
+      supervisorId: FirestoreDocumentReferenceIdConverter.fromJsonValue(
+          json['supervisor']),
       seniority: json['seniorityString'] as String,
       jobTitle: json['jobTitleString'] as String,
       department: json['departmentString'] as String,

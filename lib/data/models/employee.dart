@@ -56,7 +56,7 @@ class Employee {
   /// ID of the employee's supervisor
   @JsonKey(
     name: 'supervisor',
-    fromJson: _supervisorIdFromJson,
+    fromJson: FirestoreDocumentReferenceIdConverter.fromJsonValue,
     includeToJson: false,
   )
   final String? supervisorId;
@@ -210,9 +210,4 @@ DateTime? _dateFromJson(Object? value) {
   }
 
   return DateTime.parse((value as String).trim());
-}
-
-String? _supervisorIdFromJson(Object? value) {
-  return const FirestoreDocumentReferenceIdConverter('employees')
-      .fromJson(value);
 }

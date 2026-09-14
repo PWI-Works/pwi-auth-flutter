@@ -8,8 +8,7 @@ class FirestoreDocumentReferenceIdConverter
 
   final String collectionPath;
 
-  @override
-  String? fromJson(Object? json) {
+  static String? fromJsonValue(Object? json) {
     if (json == null) {
       return null;
     }
@@ -22,6 +21,11 @@ class FirestoreDocumentReferenceIdConverter
       'Field must be a Firestore document reference.',
       json,
     );
+  }
+
+  @override
+  String? fromJson(Object? json) {
+    return fromJsonValue(json);
   }
 
   @override
