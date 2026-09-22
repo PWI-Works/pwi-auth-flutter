@@ -7,6 +7,7 @@ class LoadingButton extends StatefulWidget {
   final RoundedLoadingButtonController controller;
 
   /// Callback function to be executed when the button is pressed.
+  /// A null callback disables the button and applies disabled child styling.
   final VoidCallback? onPressed;
 
   /// The child widget to be displayed inside the button.
@@ -88,6 +89,16 @@ class _LoadingButtonState extends State<LoadingButton> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final foregroundColor = widget.onPressed == null
+        ? colorScheme.onSurface.withValues(alpha: 0.38)
+        : colorScheme.onPrimary;
+    final styledChild = DefaultTextStyle.merge(
+      style: TextStyle(color: foregroundColor),
+      child: IconTheme.merge(
+        data: IconThemeData(color: foregroundColor),
+        child: widget.child,
+      ),
+    );
 
     // First build: Measure the child
     if (_childWidth == null) {
@@ -97,7 +108,7 @@ class _LoadingButtonState extends State<LoadingButton> {
           key: _childKey,
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: widget.horizontalPadding),
-            child: widget.child,
+            child: styledChild,
           ),
         ),
       );
@@ -120,7 +131,7 @@ class _LoadingButtonState extends State<LoadingButton> {
       failedIcon: widget.failedIcon ?? Icons.error,
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: widget.horizontalPadding),
-        child: widget.child,
+        child: styledChild,
       ),
     );
   }
