@@ -7,27 +7,14 @@ class LoadingButton extends StatefulWidget {
   final RoundedLoadingButtonController controller;
 
   /// Callback function to be executed when the button is pressed.
+  /// A null callback disables the button and applies disabled child styling.
   final VoidCallback? onPressed;
 
   /// The child widget to be displayed inside the button.
   final Widget child;
 
   /// The background color of the button.
-  ///
-  /// This takes precedence over the enabled background color in [style].
   final Color? color;
-
-  /// Overrides colors inherited from the ambient [ElevatedButtonTheme].
-  ///
-  /// [ButtonStyle.foregroundColor] and [ButtonStyle.backgroundColor] are
-  /// supported. Other style properties continue to be controlled by
-  /// [RoundedLoadingButton].
-  final ButtonStyle? style;
-
-  /// The background color of the button when [onPressed] is null.
-  ///
-  /// This takes precedence over the disabled background color in [style].
-  final Color? disabledColor;
 
   /// The color of the loading indicator.
   final Color? valueColor;
@@ -60,8 +47,6 @@ class LoadingButton extends StatefulWidget {
     required this.onPressed,
     required this.child,
     this.color,
-    this.style,
-    this.disabledColor,
     this.valueColor,
     this.borderRadius,
     this.duration,
@@ -103,26 +88,10 @@ class _LoadingButtonState extends State<LoadingButton> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final states = <WidgetState>{
-      if (widget.onPressed == null) WidgetState.disabled,
-    };
-    final themedStyle = theme.elevatedButtonTheme.style;
-    final effectiveStyle = themedStyle?.merge(widget.style) ?? widget.style;
-    final defaultForegroundColor = widget.onPressed == null
+    final colorScheme = Theme.of(context).colorScheme;
+    final foregroundColor = widget.onPressed == null
         ? colorScheme.onSurface.withValues(alpha: 0.38)
         : colorScheme.onPrimary;
-    final foregroundColor =
-        effectiveStyle?.foregroundColor?.resolve(states) ??
-            defaultForegroundColor;
-    final backgroundColor = widget.onPressed == null
-        ? widget.disabledColor ??
-            effectiveStyle?.backgroundColor?.resolve(states) ??
-            colorScheme.onSurface.withValues(alpha: 0.12)
-        : widget.color ??
-            effectiveStyle?.backgroundColor?.resolve(states) ??
-            colorScheme.primary;
     final styledChild = DefaultTextStyle.merge(
       style: TextStyle(color: foregroundColor),
       child: IconTheme.merge(
@@ -149,12 +118,11 @@ class _LoadingButtonState extends State<LoadingButton> {
     return RoundedLoadingButton(
       controller: widget.controller,
       onPressed: widget.onPressed,
-      color: backgroundColor,
-      disabledColor: backgroundColor,
+      color: widget.color ?? colorScheme.primary,
       height: 40,
       loaderSize: 20,
       width: _childWidth! + (widget.horizontalPadding * 2),
-      valueColor: widget.valueColor ?? foregroundColor,
+      valueColor: widget.valueColor ?? colorScheme.onPrimary,
       borderRadius: widget.borderRadius ?? 25.0,
       duration: widget.duration ?? const Duration(milliseconds: 400),
       errorColor: widget.errorColor ?? colorScheme.error,
