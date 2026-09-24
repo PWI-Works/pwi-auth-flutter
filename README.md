@@ -160,10 +160,14 @@ import 'package:pwi_auth/data/repositories/holiday_repository.dart';
 final holidayRepository = HolidayRepository();
 holidayRepository.addListener(onHolidaysChanged);
 final liveHolidays = holidayRepository.data.value;
+
+await holidayRepository.upsertHoliday(updatedHoliday, firebaseUserId);
 ```
 
 Each `Holiday` contains its Firestore document `id`, `name`, date-only `date`,
-and `isPaid` status. Remove repository listeners when the consumer is disposed.
+and `isPaid` status. Holiday upserts update repository state optimistically and
+reload the Firestore stream if persistence fails. Remove repository listeners
+when the consumer is disposed.
 
 ### Import the Package
 

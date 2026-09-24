@@ -33,14 +33,6 @@ class Holiday {
   @JsonKey(defaultValue: false)
   final bool isPaid;
 
-  /// Whether the holiday is today or in the future.
-  bool get canEdit {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final holidayDate = DateTime(date.year, date.month, date.day);
-    return !holidayDate.isBefore(today);
-  }
-
   /// Creates a holiday from a Firestore document.
   factory Holiday.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> document,
@@ -68,8 +60,8 @@ DateTime _dateFromJson(Object value) {
 }
 
 String _dateToJson(DateTime value) {
-  final year = value.year.toString().padLeft(4, '0');
-  final month = value.month.toString().padLeft(2, '0');
-  final day = value.day.toString().padLeft(2, '0');
-  return '$year-$month-$day';
+  return DateTime(value.year, value.month, value.day)
+      .toIso8601String()
+      .split('T')
+      .first;
 }
