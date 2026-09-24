@@ -148,6 +148,23 @@ Import these APIs from
 `package:pwi_auth/data/repositories/base_data_stream_repository.dart` or
 `package:pwi_auth/data/repositories/base_data_fetch_repository.dart`.
 
+### Shared Holidays
+
+The package exposes the company holidays stored in the shared Firestore
+`holidays` collection. Consumers can retain live data through
+`HolidayRepository`:
+
+```dart
+import 'package:pwi_auth/data/repositories/holiday_repository.dart';
+
+final holidayRepository = HolidayRepository();
+holidayRepository.addListener(onHolidaysChanged);
+final liveHolidays = holidayRepository.data.value;
+```
+
+Each `Holiday` contains its Firestore document `id`, `name`, date-only `date`,
+and `isPaid` status. Remove repository listeners when the consumer is disposed.
+
 ### Import the Package
 
 ```dart
