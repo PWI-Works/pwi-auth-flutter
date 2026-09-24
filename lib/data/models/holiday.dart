@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:pwi_auth/data/converters/json_date_time_converter.dart';
 
 part 'holiday.g.dart';
 
@@ -26,7 +27,7 @@ class Holiday {
   ///
   /// Firestore stores this value as a `YYYY-MM-DD` string so converting it
   /// never introduces a time-zone offset.
-  @JsonKey(fromJson: _dateFromJson, toJson: _dateToJson)
+  @JsonKey(fromJson: dateOnlyFromJson, toJson: dateOnlyToJson)
   final DateTime date;
 
   /// Whether employees are paid for the holiday.
@@ -49,19 +50,4 @@ class Holiday {
 
   /// Converts this holiday to the format stored in Firestore.
   Map<String, dynamic> toJson() => _$HolidayToJson(this);
-}
-
-DateTime _dateFromJson(Object value) {
-  if (value is DateTime) {
-    return DateTime(value.year, value.month, value.day);
-  }
-
-  return DateTime.parse(value as String);
-}
-
-String _dateToJson(DateTime value) {
-  return DateTime(value.year, value.month, value.day)
-      .toIso8601String()
-      .split('T')
-      .first;
 }
