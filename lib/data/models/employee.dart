@@ -11,6 +11,7 @@ import 'package:pwi_auth/enums/employment_status.dart';
 import 'package:pwi_auth/semantic_colors.dart';
 
 part 'employee.g.dart';
+part 'employee_name_extensions.dart';
 
 /// Represents an employee with various attributes.
 ///
@@ -105,7 +106,7 @@ class Employee {
   bool get isActive => employmentStatus == EmploymentStatus.active;
 
   /// Gets the preferred first name from the preferred name string.
-  String get preferredFirstName => preferredName.split(' ')[0];
+  String get preferredFirstName => _preferredNameParts.firstName;
 
   /// Creates a copy with updated modifiable fields.
   Employee copyWith({
@@ -174,11 +175,12 @@ class Employee {
   Map<String, dynamic> toJson() => _$EmployeeToJson(this);
 
   /// Gets the initials from the preferred name.
-  /// This method splits the preferredName by spaces and returns a string containing the first letter of the first word and the first letter of the last word.
+  /// Uses the first and last name parts before any comma, excluding the suffix.
+  /// Returns an empty string for an empty name.
   String get initials {
-    List<String> names =
-        preferredName.split(' '); // Split preferred name into words
-    return '${names.first[0]}${names.last[0]}'; // Concatenate first letters of first and last words
+    final names = _preferredNameParts.names;
+    if (names.isEmpty) return '';
+    return '${names.first[0]}${names.last[0]}';
   }
 
   /// Returns the color associated with the employee's seniority level.
