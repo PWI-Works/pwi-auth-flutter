@@ -21,8 +21,8 @@ Employee _$EmployeeFromJson(Map<String, dynamic> json) => Employee._(
       department: json['departmentString'] as String,
       employeeType:
           $enumDecodeNullable(_$EmployeeTypeEnumMap, json['employeeType']),
-      startDate: _dateFromJson(json['startDate']),
-      lastDayAtPWI: _dateFromJson(json['lastDayAtPWI']),
+      startDate: nullableDateTimeFromJson(json['startDate']),
+      lastDayAtPWI: nullableDateTimeFromJson(json['lastDayAtPWI']),
       employmentStatus:
           $enumDecode(_$EmploymentStatusEnumMap, json['employmentStatus']),
       activeDirectoryProcessingStatus:

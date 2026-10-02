@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:pwi_auth/data/converters/firestore_document_reference_id_converter.dart';
+import 'package:pwi_auth/data/converters/json_date_time_converter.dart';
 import 'package:pwi_auth/data/models/color_set.dart';
 import 'package:pwi_auth/enums/employee_type.dart';
 import 'package:pwi_auth/enums/employment_status.dart';
@@ -87,11 +88,11 @@ class Employee {
   final EmployeeType? employeeType;
 
   /// Date when the employee started
-  @JsonKey(fromJson: _dateFromJson, includeToJson: false)
+  @JsonKey(fromJson: nullableDateTimeFromJson, includeToJson: false)
   final DateTime? startDate;
 
   /// Date when the employee ended (if applicable)
-  @JsonKey(fromJson: _dateFromJson, includeToJson: false)
+  @JsonKey(fromJson: nullableDateTimeFromJson, includeToJson: false)
   final DateTime? lastDayAtPWI;
 
   /// Employee's current employment status.
@@ -202,12 +203,4 @@ class Employee {
     // Default color if no matches found
     return const ColorSet(background: Colors.grey, foreground: Colors.black);
   }
-}
-
-DateTime? _dateFromJson(Object? value) {
-  if (value == null) {
-    return null;
-  }
-
-  return DateTime.parse((value as String).trim());
 }

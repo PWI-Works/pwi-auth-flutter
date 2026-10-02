@@ -7,4 +7,7 @@ class FirebasePaths {
 
   /// Firebase collection for environment settings.
   static const String collectionEnvironment = 'env';
+
+  /// Firebase collection for company holidays.
+  static const String collectionHolidays = 'holidays';
 }
