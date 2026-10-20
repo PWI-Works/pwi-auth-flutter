@@ -198,6 +198,7 @@ void main() {
     await Future<void>.delayed(Duration.zero);
     expect(never.fetchError, isA<StateError>());
     expect(never.fetchStackTrace.toString(), contains('fetch stack'));
+    expect(never.loadError.value, same(never.fetchError));
     expect(never.data.value, isNull);
 
     // A synchronous throw must not leave a completed Future marked in flight.
@@ -205,6 +206,7 @@ void main() {
     await Future<void>.delayed(Duration.zero);
     expect(never.fetchCount, 4);
     expect(never.data.value, [4]);
+    expect(never.loadError.value, isNull);
 
     never.removeListener(listener);
     never.dispose();

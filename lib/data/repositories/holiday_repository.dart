@@ -12,14 +12,6 @@ class HolidayRepository extends BaseDataStreamRepository<List<Holiday>> {
 
   final HolidayService _holidayService;
 
-  /// The most recent error emitted by the holiday stream, or `null` when the
-  /// stream has not failed or has subsequently emitted valid data.
-  ///
-  /// Consumers that handle loading failures must listen to this notifier in
-  /// addition to registering with [addListener] for holiday data and stream
-  /// lifecycle management.
-  late final loadError = createProperty<Object?>(null);
-
   @override
   StreamSubscription<List<Holiday>> createDataStream() {
     loadError.value = null;
