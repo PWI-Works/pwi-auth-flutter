@@ -12,10 +12,21 @@ class HolidayRepository extends BaseDataStreamRepository<List<Holiday>> {
 
   final HolidayService _holidayService;
 
+  /// The most recent error emitted by the holiday stream, or `null` when the
+  /// stream has not failed or has subsequently emitted valid data.
+  late final loadError = createProperty<Object?>(null);
+
   @override
   StreamSubscription<List<Holiday>> createDataStream() {
+    loadError.value = null;
     return _holidayService.getHolidaysStream().listen(
-          (holidays) => data.value = holidays,
+          (holidays) {
+            loadError.value = null;
+            data.value = List<Holiday>.unmodifiable(holidays);
+          },
+          onError: (Object error, StackTrace _) {
+            loadError.value = error;
+          },
         );
   }
 
