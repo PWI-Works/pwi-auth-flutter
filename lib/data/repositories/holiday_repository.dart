@@ -20,14 +20,14 @@ class HolidayRepository extends BaseDataStreamRepository<List<Holiday>> {
   StreamSubscription<List<Holiday>> createDataStream() {
     loadError.value = null;
     return _holidayService.getHolidaysStream().listen(
-          (holidays) {
-            loadError.value = null;
-            data.value = List<Holiday>.unmodifiable(holidays);
-          },
-          onError: (Object error, StackTrace _) {
-            loadError.value = error;
-          },
-        );
+      (holidays) {
+        loadError.value = null;
+        data.value = List<Holiday>.unmodifiable(holidays);
+      },
+      onError: (Object error, StackTrace _) {
+        loadError.value = error;
+      },
+    );
   }
 
   /// Optimistically creates or replaces [holiday], then persists it.
