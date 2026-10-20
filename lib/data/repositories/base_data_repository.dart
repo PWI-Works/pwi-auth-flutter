@@ -69,8 +69,7 @@ abstract class BaseDataRepository<T> extends Model {
         try {
           stopDataSource();
         } finally {
-          data.value = null;
-          loadError.value = null;
+          _clear();
         }
       }
       rethrow;
@@ -108,8 +107,7 @@ abstract class BaseDataRepository<T> extends Model {
       try {
         stopDataSource();
       } finally {
-        data.value = null;
-        loadError.value = null;
+        _clear();
       }
     }
   }
@@ -127,6 +125,11 @@ abstract class BaseDataRepository<T> extends Model {
     _consumerRegistrationCount--;
   }
 
+  void _clear() {
+    data.value = null;
+    loadError.value = null;
+  }
+
   /// Clears retained data and starts a fresh active source lifecycle.
   ///
   /// This is useful when a caller needs to discard a local or optimistic data
@@ -139,8 +142,7 @@ abstract class BaseDataRepository<T> extends Model {
     }
 
     stopDataSource();
-    data.value = null;
-    loadError.value = null;
+    _clear();
     // Clearing data notifies consumers. The final consumer may remove itself
     // during that callback, in which case the repository must remain inactive.
     if (hasDataConsumers) {
@@ -182,8 +184,7 @@ abstract class BaseDataRepository<T> extends Model {
       );
     }
     stopDataSource();
-    data.value = null;
-    loadError.value = null;
+    _clear();
     _disposed = true;
     super.dispose();
   }

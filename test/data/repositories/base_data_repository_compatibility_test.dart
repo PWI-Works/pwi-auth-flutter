@@ -213,4 +213,32 @@ void main() {
     daily.dispose();
     interval.dispose();
   });
+
+  test('fetch recovery does not publish after its final consumer leaves',
+      () async {
+    final repository = _FetchRepository.never();
+    void listener() {}
+
+    repository.addListener(listener);
+    await Future<void>.delayed(Duration.zero);
+
+    repository.failNextFetch = true;
+    repository.resetData();
+    await Future<void>.delayed(Duration.zero);
+    expect(repository.loadError.value, isA<StateError>());
+
+    void onLoadError() {
+      if (repository.loadError.value == null) {
+        repository.removeListener(listener);
+      }
+    }
+
+    repository.loadError.addListener(onLoadError);
+    repository.simulateNextAutomaticAttempt();
+    await Future<void>.delayed(Duration.zero);
+
+    expect(repository.data.value, isNull);
+    repository.loadError.removeListener(onLoadError);
+    repository.dispose();
+  });
 }

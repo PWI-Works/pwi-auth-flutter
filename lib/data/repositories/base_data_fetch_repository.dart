@@ -141,7 +141,9 @@ abstract class BaseDataFetchRepository<T> extends BaseDataRepository<T> {
       final value = await fetchData();
       if (hasDataConsumers && lifecycle == _lifecycle) {
         loadError.value = null;
-        data.value = value;
+        if (hasDataConsumers && lifecycle == _lifecycle) {
+          data.value = value;
+        }
       }
     } catch (error, stackTrace) {
       if (hasDataConsumers && lifecycle == _lifecycle) {
