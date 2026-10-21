@@ -22,6 +22,14 @@ abstract class BaseDataRepository<T> extends Model {
   /// Retained source data, or `null` while not loaded or inactive.
   late final ValueNotifier<T?> data = createProperty<T?>(null);
 
+  /// The most recent error produced while loading [data].
+  ///
+  /// Concrete repositories must set this when their data source fails and
+  /// clear it after a successful load. Consumers that display load failures
+  /// must listen to this notifier directly; [addListener] manages data and the
+  /// source lifecycle only.
+  late final ValueNotifier<Object?> loadError = createProperty<Object?>(null);
+
   /// Whether at least one consumer is registered through [addListener].
   @protected
   bool get hasDataConsumers => _consumerRegistrationCount != 0;
@@ -61,7 +69,7 @@ abstract class BaseDataRepository<T> extends Model {
         try {
           stopDataSource();
         } finally {
-          data.value = null;
+          _clear();
         }
       }
       rethrow;
@@ -99,7 +107,7 @@ abstract class BaseDataRepository<T> extends Model {
       try {
         stopDataSource();
       } finally {
-        data.value = null;
+        _clear();
       }
     }
   }
@@ -117,6 +125,11 @@ abstract class BaseDataRepository<T> extends Model {
     _consumerRegistrationCount--;
   }
 
+  void _clear() {
+    data.value = null;
+    loadError.value = null;
+  }
+
   /// Clears retained data and starts a fresh active source lifecycle.
   ///
   /// This is useful when a caller needs to discard a local or optimistic data
@@ -129,7 +142,7 @@ abstract class BaseDataRepository<T> extends Model {
     }
 
     stopDataSource();
-    data.value = null;
+    _clear();
     // Clearing data notifies consumers. The final consumer may remove itself
     // during that callback, in which case the repository must remain inactive.
     if (hasDataConsumers) {
@@ -171,7 +184,7 @@ abstract class BaseDataRepository<T> extends Model {
       );
     }
     stopDataSource();
-    data.value = null;
+    _clear();
     _disposed = true;
     super.dispose();
   }
