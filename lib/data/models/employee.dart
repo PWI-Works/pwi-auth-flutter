@@ -40,7 +40,7 @@ class Employee {
 
   /// Employee's work email address
   @JsonKey(includeToJson: false)
-  final String workEmail;
+  final String? workEmail;
 
   /// Employee's mobile phone number
   @JsonKey(includeToJson: false)
