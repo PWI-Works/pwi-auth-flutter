@@ -11,7 +11,7 @@ Employee _$EmployeeFromJson(Map<String, dynamic> json) => Employee._(
       firstName: json['firstName'] as String,
       lastName: json['lastName'] as String,
       preferredName: json['preferredName'] as String,
-      workEmail: json['workEmail'] as String,
+      workEmail: json['workEmail'] as String?,
       mobile: json['mobile'] as String,
       fullNameByLastname: json['fullNameByLastname'] as String,
       supervisorId: FirestoreDocumentReferenceIdConverter.fromJsonValue(
