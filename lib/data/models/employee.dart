@@ -34,6 +34,10 @@ class Employee {
   @JsonKey(includeToJson: false)
   final String lastName;
 
+  /// Name suffix stored on the employee record.
+  @JsonKey(includeToJson: false, defaultValue: '')
+  final String suffix;
+
   /// Employee's preferred name
   @JsonKey(includeToJson: false)
   final String preferredName;
@@ -116,6 +120,7 @@ class Employee {
       id: id,
       firstName: firstName,
       lastName: lastName,
+      suffix: suffix,
       preferredName: preferredName,
       workEmail: workEmail,
       mobile: mobile,
@@ -141,6 +146,7 @@ class Employee {
     required this.id,
     required this.firstName,
     required this.lastName,
+    required this.suffix,
     required this.preferredName,
     required this.workEmail,
     required this.mobile,
