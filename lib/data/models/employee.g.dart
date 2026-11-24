@@ -10,6 +10,7 @@ Employee _$EmployeeFromJson(Map<String, dynamic> json) => Employee._(
       id: json['id'] as String,
       firstName: json['firstName'] as String,
       lastName: json['lastName'] as String,
+      suffix: json['suffix'] as String? ?? '',
       preferredName: json['preferredName'] as String,
       workEmail: json['workEmail'] as String?,
       mobile: json['mobile'] as String,

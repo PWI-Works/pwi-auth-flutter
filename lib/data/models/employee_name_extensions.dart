@@ -9,16 +9,12 @@ extension EmployeeNameExtensions on Employee {
     return names.length < 3 ? '' : names.sublist(1, names.length - 1).join(' ');
   }
 
-  /// The trimmed text after the first comma, or an empty string if absent.
-  String get suffix => _preferredNameParts.suffix;
-
   _PreferredNameParts get _preferredNameParts =>
       _PreferredNameParts.parse(preferredName);
 }
 
 class _PreferredNameParts {
   final List<String> names;
-  final String suffix;
 
   _PreferredNameParts.parse(String preferredName)
       : this._(preferredName, preferredName.indexOf(','));
@@ -28,8 +24,7 @@ class _PreferredNameParts {
             .trim()
             .split(RegExp(r'\s+'))
             .where((part) => part.isNotEmpty)
-            .toList(),
-        suffix = comma < 0 ? '' : preferredName.substring(comma + 1).trim();
+            .toList();
 
   String get firstName => names.isEmpty ? '' : names.first;
 }
